@@ -19,14 +19,8 @@
         .form-group { margin-bottom: 15px; }
         input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
         
-        /* Grille de consultation direction */
         .viewer-box { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-top: 20px; }
-        .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(140px, 1fr)); grid-template-rows: 35px repeat(9, 50px); gap: 2px; background-color: #e2e8f0; border: 1px solid #e2e8f0; margin-top: 15px; }
-        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: flex-start; justify-content: flex-end; padding-right: 4px; color: #64748b; }
-        .grid-cell { background: #ffffff; position: relative; }
-        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: #8b5cf6; color: white; border-radius: 4px; padding: 3px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; cursor: pointer; }
-        .course-card:hover { background: #7c3aed; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -35,52 +29,42 @@
         <button class="btn-action" style="margin-top:auto; background:var(--danger);" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
-        <h1>Administration Globale & Suivi des EDT</h1>
+        <h1>Administration Globale</h1>
         <div class="grid">
             <div class="card"><h2>Comptes & Élèves</h2><button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button><button class="btn-action" style="background:#0ea5e9;" onclick="openModal('modal-affect')">Associer Élève à une classe</button></div>
-            <div class="card"><h2>Structure</h2><button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button><button class="btn-action" onclick="openModal('modal-subject')">Créer une matière</button></div>
+            <div class="card"><h2>Structure</h2><button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button><button class="btn-action" onclick="openModal('modal-subject')">Gérer les matières</button></div>
             <div class="card"><h2>Emploi du temps</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau</button></div>
-        </div>
-
-        <!-- OUTIL DE SUPERVISION DIRECTION -->
-        <div class="viewer-box">
-            <h3>Supervision des Emplois du Temps</h3>
-            <div style="display:flex; gap:15px; margin-bottom:15px;">
-                <select id="view-type" onchange="toggleViewSelector()" style="width:200px;">
-                    <option value="classe">Par Classe</option>
-                    <option value="prof">Par Professeur</option>
-                </select>
-                <select id="view-target" onchange="loadSupervisionEDT()" style="flex:1;"></select>
-            </div>
-            <div class="schedule-grid" id="sup-grid">
-                <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
-            </div>
         </div>
     </main>
 
     <!-- Modales -->
     <div class="modal-overlay" id="modal-account"><div class="modal-content"><h3>Nouveau compte</h3><form id="form-account">
+        <div class="form-group"><label>Civilité</label><select id="acc-civilite"><option value="M.">M.</option><option value="Mme">Mme</option></select></div>
         <div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div>
         <div class="form-group"><input type="text" id="acc-prenom" placeholder="Prénom" required></div>
         <div class="form-group"><input type="text" id="acc-nom" placeholder="Nom" required></div>
         <div class="form-group"><input type="email" id="acc-email" placeholder="Email" required></div>
-        <div class="form-group"><input type="password" id="acc-pwd" placeholder="Mot de passe (6 caractères min)" required></div>
+        <div class="form-group"><input type="password" id="acc-pwd" placeholder="Mot de passe (6 car. min)" required></div>
         <button class="btn-action">Créer</button>
     </form></div></div>
 
     <div class="modal-overlay" id="modal-affect"><div class="modal-content"><h3>Affecter un élève</h3><form id="form-affect"><div class="form-group"><label>Élève</label><select id="affect-eleve"></select></div><div class="form-group"><label>Classe</label><select id="affect-class"></select></div><button class="btn-action">Associer</button></form></div></div>
     
-    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom de la classe" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
     
-    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <!-- Gestion des matières (Ajout + Modification) -->
+    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Gestion des matières</h3>
+        <form id="form-subject" style="margin-bottom:20px;"><input type="text" id="subject-name" placeholder="Nouvelle matière" required><button class="btn-action" style="margin-top:10px;">Ajouter</button></form>
+        <div id="subjects-list">Chargement...</div>
+    </div></div>
     
     <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Créneau Récurrent</h3><form id="form-edt">
         <div class="form-group"><label>Classe</label><select id="edt-class"></select></div>
         <div class="form-group"><label>Professeur</label><select id="edt-prof"></select></div>
         <div class="form-group"><label>Matière</label><select id="edt-subject"></select></div>
         <div class="form-group"><label>Jour</label><select id="edt-jour"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option></select></div>
-        <div class="form-group"><label>Début (ex: 08:00)</label><input type="time" id="edt-start" required></div>
-        <div class="form-group"><label>Fin (ex: 10:00)</label><input type="time" id="edt-end" required></div>
+        <div class="form-group"><label>Début</label><input type="time" id="edt-start" required></div>
+        <div class="form-group"><label>Fin</label><input type="time" id="edt-end" required></div>
         <button class="btn-action">Enregistrer</button>
     </form></div></div>
 
@@ -92,111 +76,70 @@
             window.openModal = async function(id) {
                 document.getElementById(id).classList.add('active');
                 loadDropdowns();
+                if(id === 'modal-subject') loadSubjectsManager();
             }
 
             async function loadDropdowns() {
                 const [profs, classes, subs, eleves] = await Promise.all([
-                    supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur'),
+                    supabase.from('profiles').select('id, nom, prenom, civilite').eq('role', 'professeur'),
                     supabase.from('classes').select('id, nom'),
                     supabase.from('matieres').select('id, nom'),
                     supabase.from('profiles').select('id, nom, prenom').eq('role', 'eleve')
                 ]);
-                if(profs.data) document.querySelectorAll('#edt-prof').forEach(s => s.innerHTML = profs.data.map(p => `<option value="${p.id}">${p.prenom} ${p.nom}</option>`).join(''));
+                if(profs.data) document.querySelectorAll('#edt-prof').forEach(s => s.innerHTML = profs.data.map(p => `<option value="${p.id}">${p.civilite || 'M.'} ${p.prenom} ${p.nom}</option>`).join(''));
                 if(classes.data) document.querySelectorAll('#edt-class, #affect-class').forEach(s => s.innerHTML = classes.data.map(c => `<option value="${c.id}">${c.nom}</option>`).join(''));
                 if(subs.data) document.querySelectorAll('#edt-subject').forEach(s => s.innerHTML = subs.data.map(m => `<option value="${m.id}">${m.nom}</option>`).join(''));
                 if(eleves.data) document.getElementById('affect-eleve').innerHTML = eleves.data.map(el => `<option value="${el.id}">${el.prenom} ${el.nom}</option>`).join('');
             }
 
-            window.toggleViewSelector = async function() {
-                const type = document.getElementById('view-type').value;
-                const target = document.getElementById('view-target');
-                if(type === 'classe') {
-                    const { data } = await supabase.from('classes').select('id, nom');
-                    if(data) target.innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
-                } else {
-                    const { data } = await supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur');
-                    if(data) target.innerHTML = data.map(p => `<option value="${p.id}">M. ${p.prenom} ${p.nom}</option>`).join('');
-                }
-                loadSupervisionEDT();
-            }
-
-            window.loadSupervisionEDT = async function() {
-                const type = document.getElementById('view-type').value;
-                const targetId = document.getElementById('view-target').value;
-                const grid = document.getElementById('sup-grid');
-                
-                grid.innerHTML = '<div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>';
-                for(let i = 8; i <= 16; i++) {
-                    grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
-                }
-
-                if(!targetId) return;
-
-                let query = supabase.from('cours_recurrents').select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), classes(nom), profiles(nom, prenom)');
-                if(type === 'classe') query = query.eq('classe_id', targetId);
-                else query = query.eq('prof_id', targetId);
-
-                const { data: cours } = await query;
-                if(cours) {
-                    cours.forEach(c => {
-                        const startHour = parseInt(c.heure_debut.split(':')[0]);
-                        const endHour = parseInt(c.heure_fin.split(':')[0]);
-                        const duration = endHour - startHour;
-
-                        const cell = document.createElement('div');
-                        cell.className = 'grid-cell';
-                        cell.style.gridColumn = c.jour_semaine + 1;
-                        cell.style.gridRowStart = startHour - 6;
-                        if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
-
-                        cell.innerHTML = `
-                            <div class="course-card" onclick="deleteCourse('${c.id}')" title="Cliquer pour supprimer ce créneau">
-                                <span>${c.matieres?.nom || ''}</span>
-                                <span style="font-size:9px;">${type === 'classe' ? 'M. ' + c.profiles?.nom : c.classes?.nom}</span>
-                            </div>
-                        `;
-                        grid.appendChild(cell);
-                    });
+            async function loadSubjectsManager() {
+                const { data } = await supabase.from('matieres').select('id, nom');
+                const container = document.getElementById('subjects-list');
+                if(data) {
+                    container.innerHTML = data.map(m => `
+                        <div class="list-item">
+                            <input type="text" value="${m.nom}" id="sub-${m.id}" style="width:65%; padding:5px;">
+                            <button onclick="updateSubject('${m.id}')" style="background:#0ea5e9; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Modifier</button>
+                            <button onclick="deleteSubject('${m.id}')" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Suppr.</button>
+                        </div>
+                    `).join('');
                 }
             }
 
-            window.deleteCourse = async function(id) {
-                if(confirm("Voulez-vous supprimer ce cours de l'emploi du temps ?")) {
-                    await supabase.from('cours_recurrents').delete().eq('id', id);
-                    loadSupervisionEDT();
+            window.updateSubject = async function(id) {
+                const newName = document.getElementById(`sub-${id}`).value;
+                await supabase.from('matieres').update({ nom: newName }).eq('id', id);
+                alert("Matière mise à jour !");
+                loadSubjectsManager();
+            }
+
+            window.deleteSubject = async function(id) {
+                if(confirm("Supprimer cette matière ?")) {
+                    await supabase.from('matieres').delete().eq('id', id);
+                    loadSubjectsManager();
                 }
             }
 
             document.querySelectorAll('.modal-overlay').forEach(m => m.onclick = (e) => { if(e.target === m) m.classList.remove('active'); });
 
-            // Gestion sécurisée de création de compte
             document.getElementById('form-account').onsubmit = async(e) => {
                 e.preventDefault();
-                const email = document.getElementById('acc-email').value;
-                const password = document.getElementById('acc-pwd').value;
-                const role = document.getElementById('acc-role').value;
-                const nom = document.getElementById('acc-nom').value;
-                const prenom = document.getElementById('acc-prenom').value;
-
-                const { data, error } = await secondary.auth.signUp({ email, password });
+                const { data, error } = await secondary.auth.signUp({ email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value });
                 if (error) { alert("Erreur Auth : " + error.message); return; }
-                if (!data || !data.user) { alert("Erreur : Aucun utilisateur retourné."); return; }
 
-                const { error: profileErr } = await supabase.from('profiles').insert([{
-                    id: data.user.id, role: role, nom: nom, prenom: prenom
+                await supabase.from('profiles').insert([{
+                    id: data.user.id,
+                    role: document.getElementById('acc-role').value,
+                    civilite: document.getElementById('acc-civilite').value,
+                    nom: document.getElementById('acc-nom').value,
+                    prenom: document.getElementById('acc-prenom').value
                 }]);
-
-                if (profileErr) {
-                    alert("Erreur profil : " + profileErr.message);
-                } else {
-                    alert("Compte créé avec succès !");
-                    location.reload();
-                }
+                alert("Compte créé !"); location.reload();
             };
 
-            document.getElementById('form-affect').onsubmit = async(e) => { e.preventDefault(); await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value); alert("Élève associé à la classe !"); location.reload(); };
+            document.getElementById('form-affect').onsubmit = async(e) => { e.preventDefault(); await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value); alert("Élève associé !"); location.reload(); };
             document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); alert("Classe créée !"); location.reload(); };
-            document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); alert("Matière créée !"); location.reload(); };
+            document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); loadSubjectsManager(); document.getElementById('subject-name').value = ''; };
             
             document.getElementById('form-edt').onsubmit = async(e) => {
                 e.preventDefault();
@@ -208,12 +151,10 @@
                     heure_debut: document.getElementById('edt-start').value,
                     heure_fin: document.getElementById('edt-end').value
                 }]);
-                alert("Créneau récurrent planifié !"); location.reload();
+                alert("Créneau planifié !"); location.reload();
             };
 
             document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
-            
-            toggleViewSelector();
         })();
     </script>
 </body>
