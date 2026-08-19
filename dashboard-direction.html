@@ -4,81 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENT - Direction</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         :root {
-            --bg-body: #f8fafc;
-            --bg-sidebar: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --primary: #8b5cf6;
-            --primary-hover: #7c3aed;
-            --danger: #ef4444;
+            --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
+            --border-color: #e2e8f0; --primary: #8b5cf6; --primary-hover: #7c3aed; --danger: #ef4444;
         }
-
-        body {
-            margin: 0; font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body); color: var(--text-main);
-            display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* Sidebar */
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar & Layout */
         .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .logo { font-size: 20px; font-weight: 700; margin-bottom: 40px; }
         .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background-color: #f3e8ff; color: var(--primary); }
-        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: var(--danger); color: white; }
-
-        /* Contenu Principal */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         h1 { margin: 0; font-size: 28px; font-weight: 700; }
         .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
 
-        /* Grille des cartes */
+        /* Grille & Cartes */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
-        .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column;}
-        .card h2 { margin: 0 0 8px 0; font-size: 18px; color: var(--primary); }
-        .card p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
-
-        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: auto;}
+        .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;}
+        .card h2 { margin: 0 0 8px 0; font-size: 18px; color: var(--primary); border-bottom: 2px solid #f3e8ff; padding-bottom: 8px; }
+        .card p { color: var(--text-muted); font-size: 13px; margin: 0; line-height: 1.5; }
+        
+        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
         .btn-action:hover { background: var(--primary-hover); }
-        .btn-secondary { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
-        .btn-secondary:hover { background-color: var(--border-color); }
-
-        /* Liste des classes */
-        .class-list { list-style: none; padding: 0; margin: 0 0 20px 0; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
-        .class-list li { padding: 10px 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; font-weight: 500; }
-        .class-list li:last-child { border-bottom: none; }
-        .empty-msg { padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px; }
+        .btn-secondary { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--border-color); }
 
         /* Modales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-overlay.active { display: flex; }
         .modal-content { background: white; width: 100%; max-width: 450px; padding: 32px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .modal-header h3 { margin: 0; font-size: 20px; color: var(--text-main); }
+        .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
         .close-btn { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; }
-        
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
-        .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; box-sizing: border-box; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
         <div class="logo">🏢 Mon ENT</div>
-        <a class="nav-link active">Vue d'ensemble</a>
-        <a class="nav-link">Classes & Matières</a>
-        <a class="nav-link">Emplois du temps</a>
+        <a class="nav-link active">Tableau de bord</a>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
@@ -89,191 +64,125 @@
         </header>
 
         <div class="grid">
-            <!-- Carte Création de Comptes -->
+            <!-- 1. Gestion des Comptes -->
             <div class="card">
-                <h2>Comptes Utilisateurs</h2>
-                <p>Générez les accès de connexion pour les nouveaux élèves et les professeurs de l'établissement.</p>
-                <button class="btn-action" id="btn-open-account-modal">Créer un nouveau compte</button>
+                <h2>1. Utilisateurs</h2>
+                <p>Création des profils de base.</p>
+                <button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button>
             </div>
             
-            <!-- Carte Gestion des Classes -->
+            <!-- 2. Structure Pédagogique -->
             <div class="card">
-                <h2>Structure Pédagogique</h2>
-                <p>Classes enregistrées dans l'établissement :</p>
-                <ul class="class-list" id="class-list-container">
-                    <div class="empty-msg">Chargement des classes...</div>
-                </ul>
-                <button class="btn-action btn-secondary" id="btn-open-class-modal">Créer une nouvelle classe</button>
+                <h2>2. Structure</h2>
+                <p>Création des conteneurs pédagogiques.</p>
+                <button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button>
+                <button class="btn-action btn-secondary" onclick="openModal('modal-subject')">Créer une matière</button>
+            </div>
+
+            <!-- 3. Assignations -->
+            <div class="card">
+                <h2>3. Affectations</h2>
+                <p>Lier les élèves et professeurs à la structure.</p>
+                <button class="btn-action" onclick="openModal('modal-assign-student')">Affecter un élève à une classe</button>
+                <button class="btn-action btn-secondary" onclick="alert('Cette fonctionnalité nécessitera une table de jointure prof_matieres dans Supabase.')">Affecter un prof à une matière</button>
             </div>
         </div>
     </main>
 
-    <!-- Modale de Création de Compte -->
-    <div class="modal-overlay" id="account-modal">
+    <!-- Modale : Créer Matière -->
+    <div class="modal-overlay" id="modal-subject">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Créer un compte</h3>
-                <button class="close-btn" id="btn-close-account-modal">&times;</button>
+                <h3>Nouvelle Matière</h3>
+                <button class="close-btn" onclick="closeModal('modal-subject')">&times;</button>
             </div>
-            <form id="create-account-form">
+            <form id="form-subject">
                 <div class="form-group">
-                    <label for="new-role">Type de compte</label>
-                    <select id="new-role" required>
-                        <option value="eleve">Élève</option>
-                        <option value="professeur">Professeur</option>
-                    </select>
+                    <label>Nom de la matière</label>
+                    <input type="text" id="subject-name" required placeholder="Ex: Mathématiques">
                 </div>
-                <div style="display: flex; gap: 16px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label for="new-prenom">Prénom</label>
-                        <input type="text" id="new-prenom" required>
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label for="new-nom">Nom</label>
-                        <input type="text" id="new-nom" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="new-email">Adresse Email</label>
-                    <input type="email" id="new-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="new-password">Mot de passe provisoire</label>
-                    <input type="password" id="new-password" required>
-                </div>
-                <button type="submit" class="btn-action" id="submit-account-btn">Enregistrer l'utilisateur</button>
+                <button type="submit" class="btn-action">Enregistrer</button>
             </form>
         </div>
     </div>
 
-    <!-- Modale de Création de Classe -->
-    <div class="modal-overlay" id="class-modal">
+    <!-- Modale : Affecter Élève -->
+    <div class="modal-overlay" id="modal-assign-student">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Nouvelle Classe</h3>
-                <button class="close-btn" id="btn-close-class-modal">&times;</button>
+                <h3>Affecter un Élève</h3>
+                <button class="close-btn" onclick="closeModal('modal-assign-student')">&times;</button>
             </div>
-            <form id="create-class-form">
+            <form id="form-assign-student">
                 <div class="form-group">
-                    <label for="new-class-name">Nom de la classe</label>
-                    <input type="text" id="new-class-name" required placeholder="Ex: Seconde 1">
+                    <label>Sélectionner l'élève</label>
+                    <select id="select-student" required><option>Chargement...</option></select>
                 </div>
-                <button type="submit" class="btn-action" id="submit-class-btn">Ajouter la classe</button>
+                <div class="form-group">
+                    <label>Sélectionner la classe</label>
+                    <select id="select-class" required><option>Chargement...</option></select>
+                </div>
+                <button type="submit" class="btn-action">Valider l'affectation</button>
             </form>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-            
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-            const secondarySupabase = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // 1. Vérification de la session
-            async function checkSession() {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) { window.location.href = 'index.html'; return; }
+        // Fonctions d'interface
+        function openModal(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if (id === 'modal-assign-student') loadDropdowns();
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-                const { data: profileData } = await supabase.from('profiles').select('nom, prenom, role').eq('id', session.user.id).single();
-                if (!profileData || profileData.role !== 'direction') {
-                    window.location.href = 'index.html'; return;
-                }
-                document.getElementById('user-name').innerText = `${profileData.prenom} ${profileData.nom}`;
-                
-                // Charger les classes une fois connecté
-                fetchClasses();
-            }
-            checkSession();
+        // Vérification session
+        async function init() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return window.location.href = 'index.html';
+            const { data } = await supabase.from('profiles').select('nom, prenom, role').eq('id', session.user.id).single();
+            if (data.role !== 'direction') return window.location.href = 'index.html';
+            document.getElementById('user-name').innerText = `${data.prenom} ${data.nom}`;
+        }
+        init();
 
-            document.getElementById('btn-logout').addEventListener('click', async () => {
-                await supabase.auth.signOut();
-                window.location.href = 'index.html';
-            });
-
-            // 2. Gestion de l'affichage des classes
-            async function fetchClasses() {
-                const listContainer = document.getElementById('class-list-container');
-                const { data: classes, error } = await supabase.from('classes').select('*').order('nom');
-                
-                if (error) {
-                    listContainer.innerHTML = `<div class="empty-msg">Erreur de chargement.</div>`;
-                    return;
-                }
-
-                if (classes.length === 0) {
-                    listContainer.innerHTML = `<div class="empty-msg">Aucune classe pour le moment.</div>`;
-                    return;
-                }
-
-                listContainer.innerHTML = '';
-                classes.forEach(c => {
-                    const li = document.createElement('li');
-                    li.innerText = c.nom;
-                    listContainer.appendChild(li);
-                });
-            }
-
-            // 3. Gestion des Modales (Comptes)
-            const accountModal = document.getElementById('account-modal');
-            document.getElementById('btn-open-account-modal').addEventListener('click', () => accountModal.classList.add('active'));
-            document.getElementById('btn-close-account-modal').addEventListener('click', () => accountModal.classList.remove('active'));
-
-            document.getElementById('create-account-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('submit-account-btn');
-                btn.disabled = true; btn.innerText = "Création...";
-                
-                try {
-                    const { data: authData, error: authError } = await secondarySupabase.auth.signUp({
-                        email: document.getElementById('new-email').value,
-                        password: document.getElementById('new-password').value
-                    });
-                    if (authError) throw authError;
-
-                    await supabase.from('profiles').insert([{
-                        id: authData.user.id,
-                        role: document.getElementById('new-role').value,
-                        nom: document.getElementById('new-nom').value,
-                        prenom: document.getElementById('new-prenom').value
-                    }]);
-                    alert("Compte créé avec succès !");
-                    accountModal.classList.remove('active');
-                    e.target.reset();
-                } catch (error) {
-                    alert("Erreur: " + error.message);
-                } finally {
-                    btn.disabled = false; btn.innerText = "Enregistrer l'utilisateur";
-                }
-            });
-
-            // 4. Gestion des Modales (Classes)
-            const classModal = document.getElementById('class-modal');
-            document.getElementById('btn-open-class-modal').addEventListener('click', () => classModal.classList.add('active'));
-            document.getElementById('btn-close-class-modal').addEventListener('click', () => classModal.classList.remove('active'));
-
-            document.getElementById('create-class-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('submit-class-btn');
-                btn.disabled = true; btn.innerText = "Ajout en cours...";
-                
-                const className = document.getElementById('new-class-name').value;
-
-                try {
-                    const { error } = await supabase.from('classes').insert([{ nom: className }]);
-                    if (error) throw error;
-                    
-                    classModal.classList.remove('active');
-                    e.target.reset();
-                    fetchClasses(); // Recharge la liste instantanément
-                } catch (error) {
-                    alert("Erreur lors de la création de la classe : " + error.message);
-                } finally {
-                    btn.disabled = false; btn.innerText = "Ajouter la classe";
-                }
-            });
+        // Ajout d'une matière
+        document.getElementById('form-subject').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nom = document.getElementById('subject-name').value;
+            const { error } = await supabase.from('matieres').insert([{ nom }]);
+            if (error) alert("Erreur: " + error.message);
+            else { alert("Matière créée !"); closeModal('modal-subject'); e.target.reset(); }
         });
+
+        // Chargement des listes déroulantes pour affectation
+        async function loadDropdowns() {
+            const studentSelect = document.getElementById('select-student');
+            const classSelect = document.getElementById('select-class');
+            
+            const { data: students } = await supabase.from('profiles').select('id, nom, prenom').eq('role', 'eleve');
+            studentSelect.innerHTML = students.map(s => `<option value="${s.id}">${s.prenom} ${s.nom}</option>`).join('');
+            
+            const { data: classes } = await supabase.from('classes').select('id, nom');
+            classSelect.innerHTML = classes.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+        }
+
+        // Affectation Élève -> Classe (Mise à jour de la table profile)
+        document.getElementById('form-assign-student').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('select-student').value;
+            const classId = document.getElementById('select-class').value;
+            
+            const { error } = await supabase.from('profiles').update({ classe_id: classId }).eq('id', studentId);
+            if (error) alert("Erreur: " + error.message);
+            else { alert("Élève affecté avec succès !"); closeModal('modal-assign-student'); }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
     </script>
 </body>
 </html>
