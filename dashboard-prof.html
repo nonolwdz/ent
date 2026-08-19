@@ -20,7 +20,8 @@
 </head>
 <body>
     <nav class="sidebar">
-        <div style="font-size:18px; font-weight:700; color:var(--primary); margin-bottom:40px;">Lycée Paul de Staël (Prof)</div>
+        <div style="font-size:18px; font-weight:700; color:var(--primary); margin-bottom:20px;">Lycée Paul de Staël</div>
+        <div id="prof-name" style="font-size: 14px; font-weight: 600; margin-bottom: 40px; color: #64748b;">Chargement...</div>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
@@ -37,6 +38,15 @@
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) return location.href = 'index.html';
 
+                // Récupérer le profil du prof connecté
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+                if (!profile) {
+                    alert("Erreur : Aucun profil trouvé pour cet utilisateur.");
+                    return;
+                }
+
+                document.getElementById('prof-name').innerText = `M. ${profile.prenom} ${profile.nom}`;
+
                 buildGridHeaders();
                 loadProfEDT(session.user.id);
             }
@@ -49,13 +59,18 @@
             }
 
             async function loadProfEDT(profId) {
-                const { data: cours } = await supabase
+                const { data: cours, error } = await supabase
                     .from('cours_recurrents')
                     .select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), classes(nom)')
                     .eq('prof_id', profId);
 
+                if (error) {
+                    console.error("Erreur chargement EDT prof:", error);
+                    return;
+                }
+
                 const grid = document.getElementById('schedule-grid');
-                if(cours) {
+                if(cours && cours.length > 0) {
                     cours.forEach(c => {
                         const startHour = parseInt(c.heure_debut.split(':')[0]);
                         const endHour = parseInt(c.heure_fin.split(':')[0]);
