@@ -4,50 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENT - Connexion</title>
-    <!-- Importation de Supabase -->
+    <!-- Chargement de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Design Premium : Variables et Reset */
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f3f4f6;
-            --surface: #ffffff;
-            --text: #1f2937;
+            --primary: #6366f1; /* Indigo moderne */
+            --primary-hover: #4f46e5;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
         }
 
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Fond animé et moderne */
         body {
             margin: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            color: var(--text);
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-dark);
         }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Conteneur effet "Verre" (Glassmorphism) */
         .login-container {
-            background-color: var(--surface);
-            padding: 3rem 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         h1 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            color: var(--text);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-dark);
         }
 
         .subtitle {
-            color: #6b7280;
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
         }
 
+        /* Boutons de sélection de rôle */
         .role-selection {
             display: flex;
             flex-direction: column;
@@ -55,83 +73,118 @@
         }
 
         .role-btn {
-            background-color: transparent;
-            border: 2px solid #e5e7eb;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
             font-weight: 600;
-            color: var(--text);
+            color: var(--text-dark);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .role-btn:hover {
             border-color: var(--primary);
             color: var(--primary);
-            background-color: #f5f3ff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2);
         }
 
+        /* Formulaire */
         .login-form {
-            display: none;
+            display: none; /* Caché par défaut */
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.2rem;
             text-align: left;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-form.active {
             display: flex;
         }
 
+        .role-badge {
+            align-self: center;
+            background-color: #e0e7ff;
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
         label {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         input {
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 1rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            background-color: #f8fafc;
         }
 
         input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
         }
 
         .submit-btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 0.85rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
             cursor: pointer;
             margin-top: 1rem;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
         }
 
         .submit-btn:hover {
             background-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
 
         .submit-btn:disabled {
-            background-color: #9ca3af;
+            background-color: #94a3b8;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .back-btn {
             background: none;
             border: none;
-            color: #6b7280;
+            color: var(--text-muted);
             cursor: pointer;
-            margin-top: 1rem;
-            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .back-btn:hover {
+            color: var(--text-dark);
             text-decoration: underline;
         }
     </style>
@@ -139,35 +192,41 @@
 <body>
 
     <div class="login-container">
-        <h1>Bienvenue sur votre ENT !</h1>
-        <p class="subtitle" id="instruction-text">Veuillez sélectionner votre profil pour vous connecter.</p>
+        <h1>Mon ENT</h1>
+        <p class="subtitle" id="instruction-text">Portail de connexion sécurisé</p>
 
+        <!-- Étape 1 : Choix du rôle -->
         <div class="role-selection" id="role-selection">
-            <button class="role-btn" onclick="showForm('Élève')">🎓 Élève</button>
-            <button class="role-btn" onclick="showForm('Enseignant')">🍎 Enseignant</button>
-            <button class="role-btn" onclick="showForm('Direction')">🏢 Direction</button>
+            <button class="role-btn" onclick="showForm('Élève')">🎓 Je suis Élève</button>
+            <button class="role-btn" onclick="showForm('Enseignant')">👨‍🏫 Je suis Enseignant</button>
+            <button class="role-btn" onclick="showForm('Direction')">🏢 Je suis la Direction</button>
         </div>
 
+        <!-- Étape 2 : Formulaire -->
         <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
-            <h2 id="selected-role-title" style="margin-top: 0; text-align: center; color: var(--primary); font-size: 1.2rem;"></h2>
             
-            <label for="email">Identifiant ou Email</label>
-            <input type="email" id="email" required placeholder="nom@etablissement.fr">
+            <div class="role-badge" id="selected-role-title">Connexion</div>
             
-            <label for="password">Mot de passe</label>
-            <input type="password" id="password" required placeholder="••••••••">
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="email">Adresse email</label>
+                <input type="email" id="email" required placeholder="nom@etablissement.fr">
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
             
             <button type="submit" class="submit-btn">Se connecter</button>
-            <button type="button" class="back-btn" onclick="showRoles()">Retour au choix du profil</button>
+            <button type="button" class="back-btn" onclick="showRoles()">← Changer de profil</button>
         </form>
     </div>
 
     <script>
-        // 1. Initialisation de Supabase avec tes vraies clés
-        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
+        /* 
+         * 1. Fonctions d'interface utilisateur (UI)
+         * Placées en haut pour qu'elles marchent immédiatement
+         */
         let currentRole = '';
 
         function showForm(role) {
@@ -178,12 +237,12 @@
             const form = document.getElementById('login-form');
             form.classList.add('active');
             
-            document.getElementById('selected-role-title').innerText = 'Connexion ' + role;
+            document.getElementById('selected-role-title').innerText = 'Espace ' + role;
             
             const emailInput = document.getElementById('email');
-            if (role === 'Élève') emailInput.placeholder = 'eleve@lycee-stael.fr';
-            else if (role === 'Enseignant') emailInput.placeholder = 'professeur@lycee-stael.fr';
-            else emailInput.placeholder = 'direction@lycee-stael.fr';
+            if (role === 'Élève') emailInput.placeholder = 'eleve@lycee.fr';
+            else if (role === 'Enseignant') emailInput.placeholder = 'professeur@lycee.fr';
+            else emailInput.placeholder = 'direction@lycee.fr';
         }
 
         function showRoles() {
@@ -196,17 +255,39 @@
             document.getElementById('password').value = '';
         }
 
+        /* 
+         * 2. Initialisation de Supabase
+         */
+        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+        
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        } catch (e) {
+            console.error("Supabase n'a pas pu se charger.", e);
+        }
+
+        /* 
+         * 3. Logique de connexion
+         */
         async function handleLogin(event) {
             event.preventDefault(); 
             
+            if (!supabase) {
+                alert("Erreur critique : La base de données n'est pas connectée.");
+                return;
+            }
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const submitBtn = document.querySelector('.submit-btn');
             
-            submitBtn.innerText = "Connexion en cours...";
+            submitBtn.innerText = "Connexion...";
             submitBtn.disabled = true;
 
             try {
+                // Auth Supabase
                 const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password,
@@ -214,9 +295,10 @@
 
                 if (authError) throw authError;
 
+                // Récupération Profil
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
-                    .select('role, nom, prenom')
+                    .select('role')
                     .eq('id', authData.user.id)
                     .single();
 
@@ -226,18 +308,19 @@
                 const roleChoisi = currentRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 if (roleDb !== roleChoisi) {
-                    alert(`Erreur : Votre compte est configuré comme ${profileData.role}, mais vous avez choisi ${currentRole}.`);
+                    alert(`Accès refusé : Votre compte est enregistré en tant que '${roleDb}'.`);
                     await supabase.auth.signOut();
                     showRoles();
                     return;
                 }
 
+                // Redirections
                 if (roleDb === 'eleve') window.location.href = 'dashboard-eleve.html';
                 else if (roleDb === 'professeur') window.location.href = 'dashboard-prof.html';
                 else if (roleDb === 'direction') window.location.href = 'dashboard-direction.html';
 
             } catch (error) {
-                alert("Erreur de connexion : Vérifiez votre email et votre mot de passe.");
+                alert("Erreur : Identifiants incorrects ou compte inexistant.");
                 console.error(error);
             } finally {
                 submitBtn.innerText = "Se connecter";
