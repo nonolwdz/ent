@@ -10,9 +10,11 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(150px, 1fr)); grid-template-rows: 35px repeat(9, 45px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
+        
+        /* Grille stricte : Col 1 pour les heures, Col 2 à 6 pour Lundi à Vendredi */
+        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(140px, 1fr)); grid-template-rows: 40px repeat(9, 50px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
         .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; color: #64748b; font-weight: 500; }
+        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #64748b; font-weight: 600; }
         .grid-cell { background: #ffffff; position: relative; }
         .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: var(--primary); color: white; border-radius: 6px; padding: 4px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; }
         .logout-btn { margin-top: auto; padding: 12px; border: 1px solid #ef4444; color: #ef4444; background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
@@ -32,15 +34,15 @@
             const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
             
             const slots = [
-                { start: "08:30", end: "09:25", row: 1 },
-                { start: "09:25", end: "10:20", row: 2 },
-                { start: "10:35", end: "11:30", row: 4 },
-                { start: "11:30", end: "12:25", row: 5 },
-                { start: "13:05", end: "14:00", row: 7 },
-                { start: "14:00", end: "14:55", row: 8 },
-                { start: "14:55", end: "15:50", row: 9 },
-                { start: "16:05", end: "17:00", row: 11 },
-                { start: "17:00", end: "17:55", row: 12 }
+                { start: "08:30", end: "09:25", row: 2 },
+                { start: "09:25", end: "10:20", row: 3 },
+                { start: "10:35", end: "11:30", row: 5 },
+                { start: "11:30", end: "12:25", row: 6 },
+                { start: "13:05", end: "14:00", row: 8 },
+                { start: "14:00", end: "14:55", row: 9 },
+                { start: "14:55", end: "15:50", row: 10 },
+                { start: "16:05", end: "17:00", row: 12 },
+                { start: "17:00", end: "17:55", row: 13 }
             ];
 
             async function init() {
@@ -58,7 +60,14 @@
 
             function buildGridHeaders() {
                 const grid = document.getElementById('schedule-grid');
-                let html = '<div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>';
+                let html = `
+                    <div class="grid-header" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="grid-header" style="grid-column: 2; grid-row: 1;">Lundi</div>
+                    <div class="grid-header" style="grid-column: 3; grid-row: 1;">Mardi</div>
+                    <div class="grid-header" style="grid-column: 4; grid-row: 1;">Mercredi</div>
+                    <div class="grid-header" style="grid-column: 5; grid-row: 1;">Jeudi</div>
+                    <div class="grid-header" style="grid-column: 6; grid-row: 1;">Vendredi</div>
+                `;
                 slots.forEach(s => {
                     html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
                 });
