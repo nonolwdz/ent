@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENT - Espace Direction</title>
-    <!-- Importation de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -18,6 +17,7 @@
             --border: #e5e7eb;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --success: #10b981;
         }
 
         body {
@@ -59,14 +59,9 @@
             cursor: pointer;
         }
 
-        .nav-link:hover {
+        .nav-link:hover, .nav-link.active {
             background-color: var(--primary-light);
             color: var(--primary);
-        }
-
-        .nav-link.active {
-            background-color: var(--primary);
-            color: white;
         }
 
         .logout-btn {
@@ -100,10 +95,7 @@
             margin-bottom: 2rem;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 1.8rem;
-        }
+        h1 { margin: 0; font-size: 1.8rem; }
 
         .user-info {
             background-color: var(--surface);
@@ -113,7 +105,7 @@
             font-weight: 600;
         }
 
-        /* Grille des cartes d'administration */
+        /* Cartes d'administration */
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -146,13 +138,12 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: 0.2s;
             text-align: center;
+            width: 100%;
         }
 
-        .action-btn:hover {
-            background-color: var(--primary-hover);
-        }
+        .action-btn:hover { background-color: var(--primary-hover); }
 
         .action-btn.secondary {
             background-color: var(--bg);
@@ -160,85 +151,198 @@
             border: 1px solid var(--border);
         }
         
-        .action-btn.secondary:hover {
-            background-color: var(--border);
+        .action-btn.secondary:hover { background-color: var(--border); }
+        .action-btn.warning { background-color: var(--warning); color: white; }
+
+        /* Styles de la Modale */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
 
-        .action-btn.warning {
-            background-color: var(--warning);
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 { margin: 0; color: var(--primary); font-size: 1.3rem; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label { font-size: 0.9rem; font-weight: 600; }
+        .form-group input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+        }
+        .form-group input:focus { border-color: var(--primary); }
+
     </style>
 </head>
 <body>
 
-    <!-- Barre latérale -->
     <nav class="sidebar">
         <div class="logo-area">Mon ENT</div>
         <a class="nav-link active">🏢 Vue d'ensemble</a>
         <a class="nav-link">👥 Gestion des Comptes</a>
         <a class="nav-link">🏫 Gestion des Classes</a>
         <a class="nav-link">📅 Emplois du temps</a>
-        <a class="nav-link">📢 Messagerie Globale</a>
         
         <button class="logout-btn" onclick="handleLogout()">Se déconnecter</button>
     </nav>
 
-    <!-- Zone principale -->
     <main class="main-content">
         <header class="header">
             <h1 id="welcome-message">Tableau de bord - Direction</h1>
             <div class="user-info" id="user-name">Chargement...</div>
         </header>
 
-        <!-- Grille d'actions -->
         <div class="admin-grid">
-            
-            <!-- Carte : Comptes -->
             <div class="admin-card">
                 <h2>Gestion des Comptes</h2>
                 <p>Créer, modifier ou supprimer des accès pour les membres de l'établissement.</p>
-                <button class="action-btn">Créer un compte Élève</button>
+                <button class="action-btn" onclick="openEleveModal()">Créer un compte Élève</button>
                 <button class="action-btn secondary">Créer un compte Professeur</button>
             </div>
-
-            <!-- Carte : Classes et Matières -->
+            
             <div class="admin-card">
                 <h2>Classes et Matières</h2>
                 <p>Structurer l'organisation pédagogique de l'établissement.</p>
                 <button class="action-btn">Gérer les classes</button>
                 <button class="action-btn secondary">Associer une matière à un prof</button>
             </div>
-
-            <!-- Carte : Emplois du temps -->
-            <div class="admin-card">
-                <h2>Emplois du temps</h2>
-                <p>Configurer les emplois du temps ou gérer les absences exceptionnelles.</p>
-                <button class="action-btn">Créer / Modifier un EDT</button>
-                <button class="action-btn warning" onclick="alert('Cette action va griser et barrer les cours sur les EDT des élèves concernés.')">Déclarer un professeur absent</button>
-            </div>
-
         </div>
     </main>
 
+    <!-- Modale de création d'élève -->
+    <div class="modal-overlay" id="modal-eleve">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Créer un compte Élève</h2>
+                <button class="close-btn" onclick="closeEleveModal()">&times;</button>
+            </div>
+            <form id="form-create-eleve" onsubmit="handleCreateEleve(event)">
+                <div class="form-group">
+                    <label for="new-nom">Nom</label>
+                    <input type="text" id="new-nom" required placeholder="Ex: Dupont">
+                </div>
+                <div class="form-group">
+                    <label for="new-prenom">Prénom</label>
+                    <input type="text" id="new-prenom" required placeholder="Ex: Martin">
+                </div>
+                <div class="form-group">
+                    <label for="new-email">Email</label>
+                    <input type="email" id="new-email" required placeholder="martin.dupont@lycee.fr">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Mot de passe provisoire</label>
+                    <input type="password" id="new-password" required placeholder="Minimum 6 caractères">
+                </div>
+                <button type="submit" class="action-btn" id="btn-submit-eleve">Créer le compte</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // 1. Initialisation de Supabase avec tes vraies clés
+        // 1. Initialisation de Supabase (Client Principal pour la session Direction)
         const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // 2. Vérification de la session
+        // Client Secondaire : Sert UNIQUEMENT à créer des comptes sans déconnecter la Direction
+        const tempSupabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
+            auth: { persistSession: false } 
+        });
+
+        // 2. Gestion de la modale
+        function openEleveModal() {
+            document.getElementById('modal-eleve').classList.add('active');
+        }
+
+        function closeEleveModal() {
+            document.getElementById('modal-eleve').classList.remove('active');
+            document.getElementById('form-create-eleve').reset(); // Vide le formulaire
+        }
+
+        // 3. Logique de création du compte
+        async function handleCreateEleve(event) {
+            event.preventDefault();
+
+            const nom = document.getElementById('new-nom').value;
+            const prenom = document.getElementById('new-prenom').value;
+            const email = document.getElementById('new-email').value;
+            const password = document.getElementById('new-password').value;
+            const submitBtn = document.getElementById('btn-submit-eleve');
+
+            submitBtn.innerText = "Création en cours...";
+            submitBtn.disabled = true;
+
+            try {
+                // Étape A : Créer l'utilisateur dans l'Authentification (avec le client secondaire)
+                const { data: authData, error: authError } = await tempSupabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) throw authError;
+                
+                if (!authData.user) {
+                    throw new Error("L'utilisateur n'a pas pu être créé (vérifie que la confirmation d'email est bien désactivée).");
+                }
+
+                // Étape B : Insérer son profil dans la table 'profiles' (avec le client principal)
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([
+                        { id: authData.user.id, role: 'eleve', nom: nom, prenom: prenom }
+                    ]);
+
+                if (profileError) throw profileError;
+
+                alert(`Le compte élève pour ${prenom} ${nom} a été créé avec succès !`);
+                closeEleveModal();
+
+            } catch (error) {
+                console.error("Erreur de création :", error);
+                alert("Erreur lors de la création : " + error.message);
+            } finally {
+                submitBtn.innerText = "Créer le compte";
+                submitBtn.disabled = false;
+            }
+        }
+
+        // 4. Vérification de la session au démarrage
         async function checkSession() {
             const { data: { session }, error } = await supabase.auth.getSession();
-
-            if (!session) {
-                window.location.href = 'index.html';
-                return;
-            }
-
+            if (!session) { window.location.href = 'index.html'; return; }
             fetchUserProfile(session.user.id);
         }
 
-        // 3. Récupération et vérification du profil
         async function fetchUserProfile(userId) {
             const { data, error } = await supabase
                 .from('profiles')
@@ -246,33 +350,19 @@
                 .eq('id', userId)
                 .single();
 
-            if (error) {
-                console.error("Erreur lors de la récupération du profil :", error);
-                return;
-            }
-
-            // Sécurité : On s'assure que seul un membre de la direction peut voir cette page
-            if (data.role !== 'direction') {
-                alert("Accès non autorisé. Vous n'avez pas les droits de direction.");
+            if (error || data.role !== 'direction') {
+                alert("Accès non autorisé.");
                 window.location.href = 'index.html';
                 return;
             }
-
             document.getElementById('user-name').innerText = `${data.prenom} ${data.nom} (Direction)`;
         }
 
-        // 4. Déconnexion
         async function handleLogout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                alert("Erreur lors de la déconnexion.");
-                console.error(error);
-            } else {
-                window.location.href = 'index.html';
-            }
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
         }
 
-        // Lancement au chargement
         checkSession();
     </script>
 </body>
