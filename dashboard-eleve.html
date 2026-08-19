@@ -10,11 +10,11 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(150px, 1fr)); grid-template-rows: 40px repeat(9, 60px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
-        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .time-label { background: #f8fafc; font-size: 12px; display: flex; align-items: flex-start; justify-content: flex-end; padding-right: 5px; color: #64748b; }
+        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(150px, 1fr)); grid-template-rows: 35px repeat(9, 45px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
+        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; color: #64748b; font-weight: 500; }
         .grid-cell { background: #ffffff; position: relative; }
-        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: var(--primary); color: white; border-radius: 6px; padding: 5px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; }
+        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: var(--primary); color: white; border-radius: 6px; padding: 4px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; }
         .logout-btn { margin-top: auto; padding: 12px; border: 1px solid #ef4444; color: #ef4444; background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
@@ -24,25 +24,32 @@
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
-        <h1 id="page-title">Mon Emploi du Temps (Récurrent)</h1>
-        <div class="schedule-container">
-            <div class="schedule-grid" id="schedule-grid">
-                <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
-            </div>
-        </div>
+        <h1>Mon Emploi du Temps</h1>
+        <div class="schedule-grid" id="schedule-grid"></div>
     </main>
     <script>
         (function() {
             const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
             
+            const slots = [
+                { start: "08:30", end: "09:25", row: 1 },
+                { start: "09:25", end: "10:20", row: 2 },
+                { start: "10:35", end: "11:30", row: 4 },
+                { start: "11:30", end: "12:25", row: 5 },
+                { start: "13:05", end: "14:00", row: 7 },
+                { start: "14:00", end: "14:55", row: 8 },
+                { start: "14:55", end: "15:50", row: 9 },
+                { start: "16:05", end: "17:00", row: 11 },
+                { start: "17:00", end: "17:55", row: 12 }
+            ];
+
             async function init() {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (!session) return window.location.href = 'index.html';
+                if (!session) return location.href = 'index.html';
 
                 const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
                 if (!profile || !profile.classe_id) {
-                    alert("Votre compte n'est rattaché à aucune classe. Contactez la direction.");
-                    return;
+                    alert("Votre compte n'est rattaché à aucune classe."); return;
                 }
 
                 buildGridHeaders();
@@ -51,34 +58,37 @@
 
             function buildGridHeaders() {
                 const grid = document.getElementById('schedule-grid');
-                for(let i = 8; i <= 16; i++) {
-                    grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
-                }
+                let html = '<div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>';
+                slots.forEach(s => {
+                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
+                });
+                grid.innerHTML = html;
             }
 
             async function loadEDT(classeId) {
                 const { data: cours } = await supabase
                     .from('cours_recurrents')
-                    .select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), profiles(nom)')
+                    .select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), profiles(nom, civilite)')
                     .eq('classe_id', classeId);
 
                 const grid = document.getElementById('schedule-grid');
                 if(cours) {
                     cours.forEach(c => {
-                        const startHour = parseInt(c.heure_debut.split(':')[0]);
-                        const endHour = parseInt(c.heure_fin.split(':')[0]);
-                        const duration = endHour - startHour;
+                        const startSlot = slots.find(s => s.start === c.heure_debut);
+                        const endSlot = slots.find(s => s.end === c.heure_fin);
+                        if (!startSlot || !endSlot) return;
 
                         const cell = document.createElement('div');
                         cell.className = 'grid-cell';
-                        cell.style.gridColumn = c.jour_semaine + 1; // 1 = Lundi -> Col 2
-                        cell.style.gridRowStart = startHour - 6;
-                        if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
+                        cell.style.gridColumn = c.jour_semaine + 1;
+                        cell.style.gridRowStart = startSlot.row;
+                        const span = (endSlot.row - startSlot.row) + 1;
+                        if (span > 1) cell.style.gridRowEnd = `span ${span}`;
 
                         cell.innerHTML = `
                             <div class="course-card">
-                                <span>${c.matieres ? c.matieres.nom : 'Matière'}</span>
-                                <span style="font-weight:normal; font-size:10px;">M. ${c.profiles ? c.profiles.nom : ''}</span>
+                                <span>${c.matieres?.nom || 'Matière'}</span>
+                                <span style="font-weight:normal; font-size:10px;">${c.profiles?.civilite || 'M.'} ${c.profiles?.nom || ''}</span>
                             </div>
                         `;
                         grid.appendChild(cell);
@@ -88,21 +98,6 @@
 
             document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
             init();
-            // Grille officielle du lycée (Heures de début et de fin de chaque créneau type)
-const creneauxHoraires = [
-    { debut: "08:30", fin: "09:25", ligne: 1 },
-    { debut: "09:25", fin: "10:20", ligne: 2 },
-    // Pause 10h20 - 10h35
-    { debut: "10:35", fin: "11:30", ligne: 4 },
-    { debut: "11:30", fin: "12:25", ligne: 5 },
-    // Cantine 12h25 - 13h05
-    { debut: "13:05", fin: "14:00", ligne: 7 },
-    { debut: "14:00", fin: "14:55", ligne: 8 },
-    { debut: "14:55", fin: "15:50", ligne: 9 },
-    // Pause 15h50 - 16h05
-    { debut: "16:05", fin: "17:00", ligne: 11 },
-    { debut: "17:00", fin: "17:55", ligne: 12 }
-];
         })();
     </script>
 </body>
