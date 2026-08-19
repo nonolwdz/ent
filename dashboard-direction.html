@@ -20,9 +20,9 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
         
         .viewer-box { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-top: 20px; }
-        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(140px, 1fr)); grid-template-rows: 35px repeat(9, 45px); gap: 2px; background-color: #e2e8f0; border: 1px solid #e2e8f0; margin-top: 15px; }
+        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(140px, 1fr)); grid-template-rows: 40px repeat(9, 50px); gap: 2px; background-color: #e2e8f0; border: 1px solid #e2e8f0; margin-top: 15px; }
         .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; color: #64748b; font-weight: 500; }
+        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #64748b; font-weight: 600; }
         .grid-cell { background: #ffffff; position: relative; }
         .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: #8b5cf6; color: white; border-radius: 4px; padding: 3px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; cursor: pointer; }
         .course-card:hover { background: #7c3aed; }
@@ -42,7 +42,6 @@
             <div class="card"><h2>Emploi du temps</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau</button></div>
         </div>
 
-        <!-- SUPERVISION DES EDT -->
         <div class="viewer-box">
             <h3>Supervision des Emplois du Temps</h3>
             <div style="display:flex; gap:15px; margin-bottom:15px;">
@@ -98,18 +97,15 @@
             const secondary = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8', { auth: { persistSession: false } });
 
             const slots = [
-                { start: "08:30", end: "09:25", row: 1 },
-                { start: "09:25", end: "10:20", row: 2 },
-                // Pause 10h20 - 10h35
-                { start: "10:35", end: "11:30", row: 4 },
-                { start: "11:30", end: "12:25", row: 5 },
-                // Cantine 12h25 - 13h05
-                { start: "13:05", end: "14:00", row: 7 },
-                { start: "14:00", end: "14:55", row: 8 },
-                { start: "14:55", end: "15:50", row: 9 },
-                // Pause 15h50 - 16h05
-                { start: "16:05", end: "17:00", row: 11 },
-                { start: "17:00", end: "17:55", row: 12 }
+                { start: "08:30", end: "09:25", row: 2 },
+                { start: "09:25", end: "10:20", row: 3 },
+                { start: "10:35", end: "11:30", row: 5 },
+                { start: "11:30", end: "12:25", row: 6 },
+                { start: "13:05", end: "14:00", row: 8 },
+                { start: "14:00", end: "14:55", row: 9 },
+                { start: "14:55", end: "15:50", row: 10 },
+                { start: "16:05", end: "17:00", row: 12 },
+                { start: "17:00", end: "17:55", row: 13 }
             ];
 
             window.openModal = async function(id) {
@@ -149,7 +145,14 @@
                 const targetId = document.getElementById('view-target').value;
                 const grid = document.getElementById('sup-grid');
                 
-                let gridHtml = '<div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>';
+                let gridHtml = `
+                    <div class="grid-header" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="grid-header" style="grid-column: 2; grid-row: 1;">Lundi</div>
+                    <div class="grid-header" style="grid-column: 3; grid-row: 1;">Mardi</div>
+                    <div class="grid-header" style="grid-column: 4; grid-row: 1;">Mercredi</div>
+                    <div class="grid-header" style="grid-column: 5; grid-row: 1;">Jeudi</div>
+                    <div class="grid-header" style="grid-column: 6; grid-row: 1;">Vendredi</div>
+                `;
                 slots.forEach(s => {
                     gridHtml += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
                 });
