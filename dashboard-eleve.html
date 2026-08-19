@@ -9,23 +9,24 @@
         :root { --bg-body: #f4f6f9; --text-main: #1e293b; --primary: #0ea5e9; --border-color: #e2e8f0; }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; box-shadow: 4px 0 24px rgba(0,0,0,0.02); }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        .main-content { flex: 1; padding: 35px; overflow-y: auto; }
         h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: #0f172a; }
 
-        .schedule-grid { display: grid; grid-template-columns: 90px repeat(5, minmax(150px, 1fr)); grid-template-rows: 50px repeat(9, 65px); background-color: var(--border-color); gap: 1px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 40px; }
-        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #475569; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
-        .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
-        .grid-cell { background: #ffffff; position: relative; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; }
+        .schedule-container { overflow: auto; border-radius: 12px; border: 1px solid var(--border-color); background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .schedule-grid { display: grid; grid-template-columns: 100px repeat(5, minmax(160px, 1fr)); grid-template-rows: 50px repeat(9, 65px); background-color: #e2e8f0; gap: 1px; }
+        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #475569; }
+        .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; border-right: 1px solid var(--border-color); }
+        .grid-cell { background: #ffffff; position: relative; }
 
         .course-card { 
-            position: absolute; top: 4px; bottom: 4px; left: 4px; right: 4px; 
+            position: absolute; top: 3px; bottom: 3px; left: 3px; right: 3px; 
             background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); 
-            color: white; border-radius: 10px; padding: 8px 10px; 
-            display: flex; flex-direction: column; justify-content: center; 
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+            color: white; border-radius: 8px; padding: 6px; 
+            display: flex; flex-direction: column; justify-content: center; text-align: center; 
+            box-shadow: 0 2px 6px rgba(14, 165, 233, 0.2);
         }
-        .course-title { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
-        .course-prof { font-weight: 400; font-size: 10px; opacity: 0.9; }
+        .course-title { font-weight: 700; font-size: 11px; margin-bottom: 2px; }
+        .course-prof { font-weight: 400; font-size: 9px; opacity: 0.9; }
 
         .logout-btn { margin-top: auto; padding: 12px; border: none; background: #fee2e2; color: #ef4444; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: #fecaca; }
@@ -39,7 +40,9 @@
     </nav>
     <main class="main-content">
         <h1>Mon Emploi du Temps</h1>
-        <div class="schedule-grid" id="schedule-grid"></div>
+        <div class="schedule-container">
+            <div class="schedule-grid" id="schedule-grid"></div>
+        </div>
     </main>
     <script>
         (function() {
@@ -86,7 +89,7 @@
                     <div class="grid-header" style="grid-column: 6; grid-row: 1;">Vendredi</div>
                 `;
                 slots.forEach(s => {
-                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start}<br><span style="font-size:9px; opacity:0.7;">${s.end}</span></div>`;
+                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
                 });
                 grid.innerHTML = html;
             }
