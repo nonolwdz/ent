@@ -3,74 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENT - Espace Élève</title>
-    
+    <title>ENT - Élève (Lycée Paul de Staël)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         :root {
             --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
-            --border-color: #e2e8f0; --primary: #0ea5e9; --danger: #ef4444;
-            
-            /* Couleurs génériques pour les matières générées dynamiquement */
-            --subject-head: #2563eb; --subject-body: #dbeafe;
+            --border-color: #e2e8f0; --primary: #0ea5e9; --primary-hover: #0284c7; --danger: #ef4444;
+            --warning: #f59e0b;
         }
-
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
         /* Sidebar */
-        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
-        .logo { font-size: 20px; font-weight: 700; margin-bottom: 40px; }
-        .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; z-index: 10;}
+        .logo { font-size: 18px; font-weight: 700; margin-bottom: 40px; color: var(--primary); }
+        .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px;}
         .nav-link:hover, .nav-link.active { background-color: #e0f2fe; color: var(--primary); }
         .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: var(--danger); color: white; }
 
-        /* Main Content */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        /* Contenu principal */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative;}
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 24px; font-weight: 700; }
         .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
 
-        /* Grille Emploi du Temps */
-        .schedule-container { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; padding: 20px; }
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: 60px repeat(5, minmax(180px, 1fr));
-            grid-template-rows: 40px repeat(9, 70px); /* 8h à 17h */
-            gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color);
-            position: relative;
-        }
+        /* Sections (Onglets) */
+        .view-section { display: none; flex: 1; flex-direction: column; }
+        .view-section.active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* 1. Grille EDT */
+        .schedule-container { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; padding: 20px; }
+        .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(180px, 1fr)); grid-template-rows: 40px repeat(9, 70px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); }
         .grid-header { background-color: #f8fafc; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .time-label { background-color: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 500; display: flex; align-items: flex-start; justify-content: flex-end; padding: 5px 8px 0 0; }
-        
-        /* Design des cours générés */
         .grid-cell { background-color: #ffffff; position: relative; }
-        .course-card {
-            position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px;
-            border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; cursor: pointer;
-        }
-        .course-card:hover { transform: scale(1.02); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .course-header { background-color: var(--subject-head); padding: 4px; font-size: 12px; font-weight: 700; color: white; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .course-body { background-color: var(--subject-body); flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; font-size: 11px; text-align: center; font-weight: 500; color: #1e3a8a; }
-        
-        /* Style pour les cours annulés */
-        .course-card.annule { opacity: 0.6; }
+        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; cursor: pointer; }
+        .course-card:hover { transform: scale(1.02); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .course-header { background-color: var(--primary); padding: 4px; font-size: 12px; font-weight: 700; color: white; text-align: center; }
+        .course-body { background-color: #e0f2fe; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; font-size: 11px; text-align: center; font-weight: 500; color: #0f172a; }
+        .course-card.annule { opacity: 0.6; pointer-events: none; }
         .course-card.annule .course-header { background-color: #64748b; text-decoration: line-through; }
         .course-card.annule .course-body { background-color: #f1f5f9; color: #64748b; }
-        .course-motif { color: var(--danger); font-weight: bold; margin-top: 2px; }
 
+        /* 2. Listes (Devoirs & Absences) */
+        .card-list { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .item-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .item-card h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 16px; }
+        .item-card p { margin: 0; color: var(--text-main); font-size: 14px; line-height: 1.5; }
+        .item-date { font-size: 12px; color: var(--text-muted); margin-top: 15px; display: block; font-weight: 600; }
+        
+        .badge-retard { color: var(--warning); border: 1px solid var(--warning); padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+        .badge-absent { color: var(--danger); border: 1px solid var(--danger); padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="logo">🏢 Mon ENT</div>
-        <a class="nav-link active">📅 Emploi du temps</a>
-        <a class="nav-link">📝 Travail à faire</a>
+        <div class="logo">Lycée Paul de Staël</div>
+        <a class="nav-link active" onclick="switchTab('edt', this)">📅 Emploi du temps</a>
+        <a class="nav-link" onclick="switchTab('devoirs', this)">📝 Travail à faire</a>
+        <a class="nav-link" onclick="switchTab('absences', this)">❌ Mes Absences</a>
+        <a class="nav-link" onclick="alert('La messagerie est en cours de développement')">💬 Messagerie</a>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
@@ -80,28 +75,27 @@
             <div class="user-badge" id="user-name">Chargement...</div>
         </header>
 
-        <div class="schedule-container">
-            <div class="schedule-grid" id="schedule-grid">
-                <!-- En-têtes fixes -->
-                <div class="grid-header"></div>
-                <div class="grid-header">Lundi</div>
-                <div class="grid-header">Mardi</div>
-                <div class="grid-header">Mercredi</div>
-                <div class="grid-header">Jeudi</div>
-                <div class="grid-header">Vendredi</div>
+        <!-- ONGLET 1 : Emploi du temps -->
+        <div id="view-edt" class="view-section active">
+            <div class="schedule-container">
+                <div class="schedule-grid" id="schedule-grid">
+                    <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
+                    <!-- La grille des heures est générée en JS -->
+                </div>
+            </div>
+        </div>
 
-                <!-- Colonne des heures -->
-                <div class="time-label" style="grid-column: 1; grid-row: 2;">08h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 3;">09h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 4;">10h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 5;">11h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 6;">12h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 7;">13h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 8;">14h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 9;">15h00</div>
-                <div class="time-label" style="grid-column: 1; grid-row: 10;">16h00</div>
-                
-                <!-- Les cours seront injectés ici par le JavaScript -->
+        <!-- ONGLET 2 : Devoirs -->
+        <div id="view-devoirs" class="view-section">
+            <div class="card-list" id="devoirs-list">
+                <p>Chargement de vos devoirs...</p>
+            </div>
+        </div>
+
+        <!-- ONGLET 3 : Absences -->
+        <div id="view-absences" class="view-section">
+            <div class="card-list" id="absences-list">
+                <p>Chargement de vos absences...</p>
             </div>
         </div>
     </main>
@@ -111,96 +105,85 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function initDashboard() {
-            // 1. Vérifier la session
+        let currentUser = null;
+        let classeId = null;
+
+        // --- NAVIGATION ENTRE LES ONGLETS ---
+        function switchTab(tabId, element) {
+            // Mise à jour des liens visuels
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+
+            // Masquer toutes les sections, afficher la bonne
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`view-${tabId}`).classList.add('active');
+
+            // Mise à jour du titre
+            const titles = { 'edt': 'Mon Emploi du temps', 'devoirs': 'Travail à faire', 'absences': 'Mes Absences' };
+            document.getElementById('page-title').innerText = titles[tabId];
+
+            // Charger les données si besoin
+            if (tabId === 'devoirs') loadDevoirs();
+            if (tabId === 'absences') loadAbsences();
+        }
+
+        // --- INITIALISATION ---
+        async function init() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return window.location.href = 'index.html';
 
-            // 2. Récupérer le profil et vérifier que c'est un élève
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('nom, prenom, role, classe_id')
-                .eq('id', session.user.id)
-                .single();
+            const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+            if (!profile || profile.role !== 'eleve') return window.location.href = 'index.html';
 
-            if (!profile || profile.role !== 'eleve') {
-                alert("Accès refusé.");
-                window.location.href = 'index.html';
+            currentUser = profile;
+            classeId = profile.classe_id;
+            document.getElementById('user-name').innerText = `${profile.prenom} ${profile.nom}`;
+
+            buildGridHeaders();
+            
+            if (!classeId) {
+                document.getElementById('schedule-grid').innerHTML += `<div style="grid-column: 2 / 7; text-align: center; padding: 20px;">Vous n'êtes assigné à aucune classe.</div>`;
                 return;
             }
-
-            document.getElementById('user-name').innerText = `${profile.prenom} ${profile.nom} (Élève)`;
-
-            // Si l'élève n'a pas encore de classe assignée
-            if (!profile.classe_id) {
-                document.getElementById('page-title').innerText = "Aucune classe assignée";
-                return;
-            }
-
-            // 3. Charger l'emploi du temps de sa classe
-            fetchSchedule(profile.classe_id);
+            loadEDT();
         }
 
-        async function fetchSchedule(classeId) {
-            // Supabase permet de faire des jointures facilement pour récupérer le nom du prof et de la matière
-            const { data: cours, error } = await supabase
+        function buildGridHeaders() {
+            const grid = document.getElementById('schedule-grid');
+            for(let i = 8; i <= 16; i++) {
+                grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
+            }
+        }
+
+        // --- CHARGEMENT EMPLOI DU TEMPS ---
+        async function loadEDT() {
+            const { data: cours } = await supabase
                 .from('cours')
-                .select(`
-                    id, heure_debut, heure_fin, statut, motif,
-                    matieres (nom),
-                    profiles!cours_prof_id_fkey (nom, prenom)
-                `)
+                .select('id, heure_debut, heure_fin, statut, motif, matieres(nom), profiles!cours_prof_id_fkey(nom)')
                 .eq('classe_id', classeId);
 
-            if (error) {
-                console.error("Erreur chargement EDT:", error);
-                return;
-            }
-
             const grid = document.getElementById('schedule-grid');
-
-            // 4. Placer chaque cours dans la grille
-            cours.forEach(c => {
+            if(cours) cours.forEach(c => {
                 const dateDebut = new Date(c.heure_debut);
-                const dateFin = new Date(c.heure_fin);
+                const dayOfWeek = dateDebut.getDay();
+                if (dayOfWeek < 1 || dayOfWeek > 5) return;
                 
-                // Obtenir le jour de la semaine (1 = Lundi, 5 = Vendredi)
-                // Attention : en JavaScript, 0 = Dimanche, 1 = Lundi
-                const dayOfWeek = dateDebut.getDay(); 
-                if (dayOfWeek < 1 || dayOfWeek > 5) return; // On ignore le week-end
-                
-                // La CSS Grid commence à la colonne 2 pour Lundi
-                const gridColumn = dayOfWeek + 1; 
-
-                // Obtenir l'heure (ex: 8 pour 8h00)
                 const startHour = dateDebut.getHours();
-                const endHour = dateFin.getHours();
+                const duration = new Date(c.heure_fin).getHours() - startHour;
                 
-                // La ligne 8h est la ligne 2 dans notre grille CSS
-                const gridRowStart = startHour - 6; 
-                const duration = endHour - startHour; // Nombre d'heures (span)
-
-                // Création de l'élément HTML du cours
                 const cell = document.createElement('div');
                 cell.className = 'grid-cell';
-                cell.style.gridColumn = gridColumn;
-                cell.style.gridRowStart = gridRowStart;
+                cell.style.gridColumn = dayOfWeek + 1;
+                cell.style.gridRowStart = startHour - 6;
                 if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
 
-                // Gestion du statut (annulé ou maintenu)
                 const isAnnule = c.statut === 'annule' ? 'annule' : '';
-                const motifHtml = isAnnule && c.motif ? `<span class="course-motif">${c.motif}</span>` : '';
-
-                // Les noms récupérés via les jointures
-                const matiereNom = c.matieres ? c.matieres.nom : 'Matière Inconnue';
-                const profNom = c.profiles ? `M. ${c.profiles.nom}` : 'Prof Inconnu';
-
                 cell.innerHTML = `
                     <div class="course-card ${isAnnule}">
-                        <div class="course-header">${matiereNom}</div>
+                        <div class="course-header">${c.matieres ? c.matieres.nom : 'Matière'}</div>
                         <div class="course-body">
-                            <span class="prof-name">${profNom}</span>
-                            ${motifHtml}
+                            <span style="font-weight:bold;">M. ${c.profiles ? c.profiles.nom : ''}</span>
+                            ${isAnnule ? `<span style="color:red; margin-top:5px;">${c.motif || 'Annulé'}</span>` : ''}
                         </div>
                     </div>
                 `;
@@ -208,13 +191,71 @@
             });
         }
 
-        // Lancement au chargement
-        initDashboard();
+        // --- CHARGEMENT DES DEVOIRS ---
+        async function loadDevoirs() {
+            const container = document.getElementById('devoirs-list');
+            container.innerHTML = '<p>Recherche des devoirs...</p>';
 
-        // Déconnexion
-        document.getElementById('btn-logout').addEventListener('click', () => { 
-            supabase.auth.signOut().then(() => window.location.href = 'index.html'); 
-        });
+            // 1. On cherche tous les cours de la classe de l'élève
+            const { data: coursClasse } = await supabase.from('cours').select('id, matieres(nom)').eq('classe_id', classeId);
+            if (!coursClasse || coursClasse.length === 0) return container.innerHTML = '<p>Aucun cours trouvé pour votre classe.</p>';
+
+            // 2. On récupère les IDs de ces cours pour trouver les devoirs correspondants
+            const coursIds = coursClasse.map(c => c.id);
+            const { data: devoirs } = await supabase.from('devoirs').select('*').in('cours_id', coursIds).order('date_limite', { ascending: true });
+
+            if (!devoirs || devoirs.length === 0) return container.innerHTML = '<p>Aucun travail à faire ! 🎉</p>';
+
+            container.innerHTML = devoirs.map(d => {
+                // Retrouver le nom de la matière grâce à l'ID du cours
+                const matiere = coursClasse.find(c => c.id === d.cours_id)?.matieres?.nom || 'Matière inconnue';
+                const dateFormatee = new Date(d.date_limite).toLocaleDateString('fr-FR');
+                
+                return `
+                    <div class="item-card">
+                        <h3>${matiere}</h3>
+                        <p>${d.contenu}</p>
+                        <span class="item-date">À faire pour le : ${dateFormatee}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- CHARGEMENT DES ABSENCES ET RETARDS ---
+        async function loadAbsences() {
+            const container = document.getElementById('absences-list');
+            container.innerHTML = '<p>Recherche du dossier...</p>';
+
+            // On va chercher dans la table appel uniquement les lignes de l'élève connecté, où il n'est PAS présent
+            const { data: absences } = await supabase
+                .from('absences_eleves')
+                .select('statut, date_saisie, cours(heure_debut, matieres(nom))')
+                .eq('eleve_id', currentUser.id)
+                .neq('statut', 'present')
+                .order('date_saisie', { ascending: false });
+
+            if (!absences || absences.length === 0) return container.innerHTML = '<p>Dossier parfait, aucune absence ni retard ! 👏</p>';
+
+            container.innerHTML = absences.map(a => {
+                const dateFormatee = new Date(a.date_saisie).toLocaleDateString('fr-FR');
+                const badge = a.statut === 'retard' ? '<span class="badge-retard">Retard</span>' : '<span class="badge-absent">Absence</span>';
+                const matiere = a.cours?.matieres?.nom || 'Cours inconnu';
+                
+                return `
+                    <div class="item-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <h3>${matiere}</h3>
+                            ${badge}
+                        </div>
+                        <span class="item-date">Signalé le : ${dateFormatee}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
+
+        init();
     </script>
 </body>
 </html>
