@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENT - Connexion</title>
+    <!-- Importation de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary: #4f46e5; /* Un bleu-violet moderne et dynamique */
+            --primary: #4f46e5;
             --primary-hover: #4338ca;
             --bg: #f3f4f6;
             --surface: #ffffff;
@@ -46,7 +48,6 @@
             font-size: 0.9rem;
         }
 
-        /* Sélection du rôle */
         .role-selection {
             display: flex;
             flex-direction: column;
@@ -71,7 +72,6 @@
             background-color: #f5f3ff;
         }
 
-        /* Formulaire de connexion (caché par défaut) */
         .login-form {
             display: none;
             flex-direction: column;
@@ -120,6 +120,11 @@
             background-color: var(--primary-hover);
         }
 
+        .submit-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
         .back-btn {
             background: none;
             border: none;
@@ -137,14 +142,12 @@
         <h1>Bienvenue sur votre ENT !</h1>
         <p class="subtitle" id="instruction-text">Veuillez sélectionner votre profil pour vous connecter.</p>
 
-        <!-- Étape 1 : Choix du rôle -->
         <div class="role-selection" id="role-selection">
             <button class="role-btn" onclick="showForm('Élève')">🎓 Élève</button>
             <button class="role-btn" onclick="showForm('Enseignant')">🍎 Enseignant</button>
             <button class="role-btn" onclick="showForm('Direction')">🏢 Direction</button>
         </div>
 
-        <!-- Étape 2 : Formulaire de connexion -->
         <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
             <h2 id="selected-role-title" style="margin-top: 0; text-align: center; color: var(--primary); font-size: 1.2rem;"></h2>
             
@@ -160,6 +163,11 @@
     </div>
 
     <script>
+        // 1. Initialisation de Supabase avec tes vraies clés
+        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         let currentRole = '';
 
         function showForm(role) {
@@ -171,6 +179,11 @@
             form.classList.add('active');
             
             document.getElementById('selected-role-title').innerText = 'Connexion ' + role;
+            
+            const emailInput = document.getElementById('email');
+            if (role === 'Élève') emailInput.placeholder = 'eleve@lycee-stael.fr';
+            else if (role === 'Enseignant') emailInput.placeholder = 'professeur@lycee-stael.fr';
+            else emailInput.placeholder = 'direction@lycee-stael.fr';
         }
 
         function showRoles() {
@@ -178,12 +191,58 @@
             document.getElementById('login-form').classList.remove('active');
             document.getElementById('role-selection').style.display = 'flex';
             document.getElementById('instruction-text').style.display = 'block';
+            
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
         }
 
-        function handleLogin(event) {
-            event.preventDefault();
-            // Ici, nous ajouterons plus tard le code pour connecter l'utilisateur via Supabase
-            alert("Tentative de connexion en tant que : " + currentRole);
+        async function handleLogin(event) {
+            event.preventDefault(); 
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = document.querySelector('.submit-btn');
+            
+            submitBtn.innerText = "Connexion en cours...";
+            submitBtn.disabled = true;
+
+            try {
+                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (authError) throw authError;
+
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('role, nom, prenom')
+                    .eq('id', authData.user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                const roleDb = profileData.role.toLowerCase();
+                const roleChoisi = currentRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                if (roleDb !== roleChoisi) {
+                    alert(`Erreur : Votre compte est configuré comme ${profileData.role}, mais vous avez choisi ${currentRole}.`);
+                    await supabase.auth.signOut();
+                    showRoles();
+                    return;
+                }
+
+                if (roleDb === 'eleve') window.location.href = 'dashboard-eleve.html';
+                else if (roleDb === 'professeur') window.location.href = 'dashboard-prof.html';
+                else if (roleDb === 'direction') window.location.href = 'dashboard-direction.html';
+
+            } catch (error) {
+                alert("Erreur de connexion : Vérifiez votre email et votre mot de passe.");
+                console.error(error);
+            } finally {
+                submitBtn.innerText = "Se connecter";
+                submitBtn.disabled = false;
+            }
         }
     </script>
 </body>
