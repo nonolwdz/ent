@@ -10,8 +10,6 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        
-        /* Grille corrigée : 1 colonne pour les heures, 5 colonnes pour les jours (Lundi à Vendredi) */
         .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(140px, 1fr)); grid-template-rows: 40px repeat(9, 50px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
         .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
         .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #64748b; font-weight: 600; }
@@ -61,7 +59,6 @@
 
             function buildGridHeaders() {
                 const grid = document.getElementById('schedule-grid');
-                // En-têtes parfaits sur la première ligne (ligne 1)
                 let html = `
                     <div class="grid-header" style="grid-column: 1; grid-row: 1;"></div>
                     <div class="grid-header" style="grid-column: 2; grid-row: 1;">Lundi</div>
@@ -70,7 +67,6 @@
                     <div class="grid-header" style="grid-column: 5; grid-row: 1;">Jeudi</div>
                     <div class="grid-header" style="grid-column: 6; grid-row: 1;">Vendredi</div>
                 `;
-                // Placement strict des étiquettes horaires sur la colonne 1
                 slots.forEach(s => {
                     html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
                 });
@@ -92,7 +88,7 @@
 
                         const cell = document.createElement('div');
                         cell.className = 'grid-cell';
-                        cell.style.gridColumn = c.jour_semaine + 1; // 1=Lundi -> Col 2
+                        cell.style.gridColumn = c.jour_semaine + 1;
                         cell.style.gridRowStart = startSlot.row;
                         const span = (endSlot.row - startSlot.row) + 1;
                         if (span > 1) cell.style.gridRowEnd = `span ${span}`;
