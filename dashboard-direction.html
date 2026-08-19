@@ -3,88 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENT - Espace Direction</title>
+    <title>ENT - Direction</title>
+    
+    <!-- Police Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-light: #e0e7ff;
-            --primary-hover: #4338ca;
-            --bg: #f3f4f6;
-            --surface: #ffffff;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #8b5cf6; /* Violet Direction */
+            --primary-hover: #7c3aed;
             --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Barre latérale */
+        /* Sidebar */
         .sidebar {
-            width: 250px;
-            background-color: var(--surface);
-            border-right: 1px solid var(--border);
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            padding: 1.5rem;
+            padding: 24px;
         }
 
-        .logo-area {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 2rem;
-            text-align: center;
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .nav-link {
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            color: var(--text-light);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--text-muted);
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            margin-bottom: 8px;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .nav-link:hover, .nav-link.active {
-            background-color: var(--primary-light);
+            background-color: #f3e8ff;
             color: var(--primary);
         }
 
         .logout-btn {
             margin-top: auto;
-            padding: 0.75rem 1rem;
-            background-color: transparent;
-            color: var(--danger);
+            padding: 12px;
             border: 1px solid var(--danger);
-            border-radius: 8px;
-            font-weight: bold;
+            color: var(--danger);
+            background: transparent;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .logout-btn:hover {
-            background-color: var(--danger);
+            background: var(--danger);
             color: white;
         }
 
-        /* Contenu principal */
+        /* Contenu Principal */
         .main-content {
             flex: 1;
-            padding: 2rem;
+            padding: 40px;
             overflow-y: auto;
         }
 
@@ -92,278 +97,306 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 40px;
         }
 
-        h1 { margin: 0; font-size: 1.8rem; }
-
-        .user-info {
-            background-color: var(--surface);
-            padding: 0.5rem 1rem;
+        h1 { margin: 0; font-size: 28px; font-weight: 700; }
+        
+        .user-badge {
+            background: white;
+            padding: 8px 16px;
             border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         /* Cartes d'administration */
-        .admin-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
         }
 
-        .admin-card {
-            background-color: var(--surface);
-            padding: 1.5rem;
+        .card {
+            background: white;
+            padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
-        .admin-card h2 {
-            margin: 0;
-            font-size: 1.2rem;
+        .card h2 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
             color: var(--primary);
-            border-bottom: 2px solid var(--primary-light);
-            padding-bottom: 0.5rem;
         }
 
-        .action-btn {
-            background-color: var(--primary);
+        .card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .btn-action {
+            width: 100%;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: bold;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            text-align: center;
-            width: 100%;
         }
 
-        .action-btn:hover { background-color: var(--primary-hover); }
+        .btn-action:hover { background: var(--primary-hover); }
 
-        .action-btn.secondary {
-            background-color: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        
-        .action-btn.secondary:hover { background-color: var(--border); }
-        .action-btn.warning { background-color: var(--warning); color: white; }
-
-        /* Styles de la Modale */
+        /* Fenêtre Modale (Popup) */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
 
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-content {
-            background-color: var(--surface);
-            padding: 2rem;
-            border-radius: 12px;
+            background: white;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
         }
 
-        .modal-header h2 { margin: 0; color: var(--primary); font-size: 1.3rem; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+        .modal-header h3 { margin: 0; font-size: 20px; color: var(--text-main); }
+        .close-btn { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .form-group label { font-size: 0.9rem; font-weight: 600; }
-        .form-group input {
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
             outline: none;
+            font-family: 'Inter', sans-serif;
         }
-        .form-group input:focus { border-color: var(--primary); }
 
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
     </style>
 </head>
 <body>
 
+    <!-- Barre latérale -->
     <nav class="sidebar">
-        <div class="logo-area">Mon ENT</div>
-        <a class="nav-link active">🏢 Vue d'ensemble</a>
-        <a class="nav-link">👥 Gestion des Comptes</a>
-        <a class="nav-link">🏫 Gestion des Classes</a>
-        <a class="nav-link">📅 Emplois du temps</a>
-        
-        <button class="logout-btn" onclick="handleLogout()">Se déconnecter</button>
+        <div class="logo">🏢 Mon ENT</div>
+        <a class="nav-link active">Vue d'ensemble</a>
+        <a class="nav-link">Classes & Matières</a>
+        <a class="nav-link">Emplois du temps</a>
+        <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
+    <!-- Zone Principale -->
     <main class="main-content">
         <header class="header">
-            <h1 id="welcome-message">Tableau de bord - Direction</h1>
-            <div class="user-info" id="user-name">Chargement...</div>
+            <h1>Espace Direction</h1>
+            <div class="user-badge" id="user-name">Chargement...</div>
         </header>
 
-        <div class="admin-grid">
-            <div class="admin-card">
-                <h2>Gestion des Comptes</h2>
-                <p>Créer, modifier ou supprimer des accès pour les membres de l'établissement.</p>
-                <button class="action-btn" onclick="openEleveModal()">Créer un compte Élève</button>
-                <button class="action-btn secondary">Créer un compte Professeur</button>
+        <div class="grid">
+            <!-- Carte Création de Comptes -->
+            <div class="card">
+                <h2>Comptes Utilisateurs</h2>
+                <p>Générez les accès de connexion pour les nouveaux élèves et les professeurs de l'établissement.</p>
+                <button class="btn-action" id="btn-open-modal">Créer un nouveau compte</button>
             </div>
             
-            <div class="admin-card">
-                <h2>Classes et Matières</h2>
-                <p>Structurer l'organisation pédagogique de l'établissement.</p>
-                <button class="action-btn">Gérer les classes</button>
-                <button class="action-btn secondary">Associer une matière à un prof</button>
+            <div class="card">
+                <h2>Structure Pédagogique</h2>
+                <p>Gérez les classes, les matières et assignez les professeurs pour préparer les emplois du temps.</p>
+                <button class="btn-action" style="background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color);">Gestion des classes</button>
             </div>
         </div>
     </main>
 
-    <!-- Modale de création d'élève -->
-    <div class="modal-overlay" id="modal-eleve">
+    <!-- Modale de Création de Compte -->
+    <div class="modal-overlay" id="account-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Créer un compte Élève</h2>
-                <button class="close-btn" onclick="closeEleveModal()">&times;</button>
+                <h3>Créer un compte</h3>
+                <button class="close-btn" id="btn-close-modal">&times;</button>
             </div>
-            <form id="form-create-eleve" onsubmit="handleCreateEleve(event)">
+            
+            <form id="create-account-form">
                 <div class="form-group">
-                    <label for="new-nom">Nom</label>
-                    <input type="text" id="new-nom" required placeholder="Ex: Dupont">
+                    <label for="new-role">Type de compte</label>
+                    <select id="new-role" required>
+                        <option value="eleve">Élève</option>
+                        <option value="professeur">Professeur</option>
+                    </select>
                 </div>
+                
+                <div style="display: flex; gap: 16px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="new-prenom">Prénom</label>
+                        <input type="text" id="new-prenom" required placeholder="Ex: Jean">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="new-nom">Nom</label>
+                        <input type="text" id="new-nom" required placeholder="Ex: Dupont">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="new-prenom">Prénom</label>
-                    <input type="text" id="new-prenom" required placeholder="Ex: Martin">
+                    <label for="new-email">Adresse Email</label>
+                    <input type="email" id="new-email" required placeholder="jean.dupont@lycee.fr">
                 </div>
-                <div class="form-group">
-                    <label for="new-email">Email</label>
-                    <input type="email" id="new-email" required placeholder="martin.dupont@lycee.fr">
-                </div>
+
                 <div class="form-group">
                     <label for="new-password">Mot de passe provisoire</label>
                     <input type="password" id="new-password" required placeholder="Minimum 6 caractères">
                 </div>
-                <button type="submit" class="action-btn" id="btn-submit-eleve">Créer le compte</button>
+
+                <button type="submit" class="btn-action" id="submit-account-btn" style="margin-top: 10px;">Enregistrer l'utilisateur</button>
             </form>
         </div>
     </div>
 
+    <!-- Scripts Logiques -->
     <script>
-        // 1. Initialisation de Supabase (Client Principal pour la session Direction)
-        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Initialisation Supabase
+            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+            
+            // Client principal pour la session actuelle
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // L'astuce : Un client secondaire qui ne sauvegarde pas la session
+            // Ça permet à la Direction de créer un compte sans être déconnectée de son propre compte !
+            const secondarySupabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
+                auth: { persistSession: false }
+            });
 
-        // Client Secondaire : Sert UNIQUEMENT à créer des comptes sans déconnecter la Direction
-        const tempSupabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-            auth: { persistSession: false } 
-        });
-
-        // 2. Gestion de la modale
-        function openEleveModal() {
-            document.getElementById('modal-eleve').classList.add('active');
-        }
-
-        function closeEleveModal() {
-            document.getElementById('modal-eleve').classList.remove('active');
-            document.getElementById('form-create-eleve').reset(); // Vide le formulaire
-        }
-
-        // 3. Logique de création du compte
-        async function handleCreateEleve(event) {
-            event.preventDefault();
-
-            const nom = document.getElementById('new-nom').value;
-            const prenom = document.getElementById('new-prenom').value;
-            const email = document.getElementById('new-email').value;
-            const password = document.getElementById('new-password').value;
-            const submitBtn = document.getElementById('btn-submit-eleve');
-
-            submitBtn.innerText = "Création en cours...";
-            submitBtn.disabled = true;
-
-            try {
-                // Étape A : Créer l'utilisateur dans l'Authentification (avec le client secondaire)
-                const { data: authData, error: authError } = await tempSupabase.auth.signUp({
-                    email: email,
-                    password: password
-                });
-
-                if (authError) throw authError;
-                
-                if (!authData.user) {
-                    throw new Error("L'utilisateur n'a pas pu être créé (vérifie que la confirmation d'email est bien désactivée).");
+            // 2. Vérification de la session Direction
+            async function checkSession() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = 'index.html';
+                    return;
                 }
 
-                // Étape B : Insérer son profil dans la table 'profiles' (avec le client principal)
-                const { error: profileError } = await supabase
+                const { data: profileData } = await supabase
                     .from('profiles')
-                    .insert([
-                        { id: authData.user.id, role: 'eleve', nom: nom, prenom: prenom }
-                    ]);
+                    .select('nom, prenom, role')
+                    .eq('id', session.user.id)
+                    .single();
 
-                if (profileError) throw profileError;
+                if (!profileData || profileData.role !== 'direction') {
+                    alert("Accès non autorisé.");
+                    window.location.href = 'index.html';
+                    return;
+                }
 
-                alert(`Le compte élève pour ${prenom} ${nom} a été créé avec succès !`);
-                closeEleveModal();
-
-            } catch (error) {
-                console.error("Erreur de création :", error);
-                alert("Erreur lors de la création : " + error.message);
-            } finally {
-                submitBtn.innerText = "Créer le compte";
-                submitBtn.disabled = false;
+                document.getElementById('user-name').innerText = `${profileData.prenom} ${profileData.nom}`;
             }
-        }
 
-        // 4. Vérification de la session au démarrage
-        async function checkSession() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (!session) { window.location.href = 'index.html'; return; }
-            fetchUserProfile(session.user.id);
-        }
+            checkSession();
 
-        async function fetchUserProfile(userId) {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('nom, prenom, role')
-                .eq('id', userId)
-                .single();
-
-            if (error || data.role !== 'direction') {
-                alert("Accès non autorisé.");
+            // 3. Déconnexion
+            document.getElementById('btn-logout').addEventListener('click', async () => {
+                await supabase.auth.signOut();
                 window.location.href = 'index.html';
-                return;
-            }
-            document.getElementById('user-name').innerText = `${data.prenom} ${data.nom} (Direction)`;
-        }
+            });
 
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        }
+            // 4. Gestion de la Fenêtre Modale
+            const modal = document.getElementById('account-modal');
+            const form = document.getElementById('create-account-form');
 
-        checkSession();
+            document.getElementById('btn-open-modal').addEventListener('click', () => {
+                modal.classList.add('active');
+            });
+
+            document.getElementById('btn-close-modal').addEventListener('click', () => {
+                modal.classList.remove('active');
+                form.reset();
+            });
+
+            // 5. Logique de création de compte
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('submit-account-btn');
+                submitBtn.innerText = "Création en cours...";
+                submitBtn.disabled = true;
+
+                const role = document.getElementById('new-role').value;
+                const prenom = document.getElementById('new-prenom').value;
+                const nom = document.getElementById('new-nom').value;
+                const email = document.getElementById('new-email').value;
+                const password = document.getElementById('new-password').value;
+
+                try {
+                    // Étape A : Créer l'utilisateur dans l'authentification avec le client secondaire
+                    const { data: authData, error: authError } = await secondarySupabase.auth.signUp({
+                        email: email,
+                        password: password
+                    });
+
+                    if (authError) throw authError;
+
+                    if (!authData.user) {
+                        throw new Error("Impossible de créer l'utilisateur. Vérifiez que la confirmation d'email est bien désactivée dans Supabase.");
+                    }
+
+                    // Étape B : Insérer le profil dans la table 'profiles' avec le client principal
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .insert([
+                            { id: authData.user.id, role: role, nom: nom, prenom: prenom }
+                        ]);
+
+                    if (profileError) throw profileError;
+
+                    // Succès !
+                    alert(`✅ Le compte ${role} pour ${prenom} ${nom} a été créé avec succès !`);
+                    modal.classList.remove('active');
+                    form.reset();
+
+                } catch (error) {
+                    alert("Erreur lors de la création : " + error.message);
+                    console.error(error);
+                } finally {
+                    submitBtn.innerText = "Enregistrer l'utilisateur";
+                    submitBtn.disabled = false;
+                }
+            });
+        });
     </script>
 </body>
 </html>
