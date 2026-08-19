@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENT - Direction</title>
     
-    <!-- Police Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -18,200 +15,65 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
-            --primary: #8b5cf6; /* Violet Direction */
+            --primary: #8b5cf6;
             --primary-hover: #7c3aed;
             --danger: #ef4444;
         }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body); color: var(--text-main);
+            display: flex; height: 100vh; overflow: hidden;
         }
 
         /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-link {
-            padding: 12px 16px;
-            border-radius: 10px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background-color: #f3e8ff;
-            color: var(--primary);
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            padding: 12px;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            background: transparent;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: var(--danger);
-            color: white;
-        }
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
+        .logo { font-size: 20px; font-weight: 700; margin-bottom: 40px; }
+        .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background-color: #f3e8ff; color: var(--primary); }
+        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .logout-btn:hover { background: var(--danger); color: white; }
 
         /* Contenu Principal */
-        .main-content {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         h1 { margin: 0; font-size: 28px; font-weight: 700; }
-        
-        .user-badge {
-            background: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 14px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+        .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
 
-        /* Cartes d'administration */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-        }
+        /* Grille des cartes */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column;}
+        .card h2 { margin: 0 0 8px 0; font-size: 18px; color: var(--primary); }
+        .card p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
 
-        .card {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-
-        .card h2 {
-            margin: 0 0 8px 0;
-            font-size: 18px;
-            color: var(--primary);
-        }
-
-        .card p {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        .btn-action {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
+        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: auto;}
         .btn-action:hover { background: var(--primary-hover); }
+        .btn-secondary { background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: var(--border-color); }
 
-        /* Fenêtre Modale (Popup) */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        /* Liste des classes */
+        .class-list { list-style: none; padding: 0; margin: 0 0 20px 0; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+        .class-list li { padding: 10px 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; font-weight: 500; }
+        .class-list li:last-child { border-bottom: none; }
+        .empty-msg { padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
-        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .modal-content {
-            background: white;
-            width: 100%;
-            max-width: 450px;
-            padding: 32px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
+        .modal-content { background: white; width: 100%; max-width: 450px; padding: 32px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .modal-header h3 { margin: 0; font-size: 20px; color: var(--text-main); }
         .close-btn { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; }
-
+        
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-        
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 14px;
-            box-sizing: border-box;
-            outline: none;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
     </style>
 </head>
 <body>
 
-    <!-- Barre latérale -->
     <nav class="sidebar">
         <div class="logo">🏢 Mon ENT</div>
         <a class="nav-link active">Vue d'ensemble</a>
@@ -220,7 +82,6 @@
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
-    <!-- Zone Principale -->
     <main class="main-content">
         <header class="header">
             <h1>Espace Direction</h1>
@@ -232,13 +93,17 @@
             <div class="card">
                 <h2>Comptes Utilisateurs</h2>
                 <p>Générez les accès de connexion pour les nouveaux élèves et les professeurs de l'établissement.</p>
-                <button class="btn-action" id="btn-open-modal">Créer un nouveau compte</button>
+                <button class="btn-action" id="btn-open-account-modal">Créer un nouveau compte</button>
             </div>
             
+            <!-- Carte Gestion des Classes -->
             <div class="card">
                 <h2>Structure Pédagogique</h2>
-                <p>Gérez les classes, les matières et assignez les professeurs pour préparer les emplois du temps.</p>
-                <button class="btn-action" style="background-color: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color);">Gestion des classes</button>
+                <p>Classes enregistrées dans l'établissement :</p>
+                <ul class="class-list" id="class-list-container">
+                    <div class="empty-msg">Chargement des classes...</div>
+                </ul>
+                <button class="btn-action btn-secondary" id="btn-open-class-modal">Créer une nouvelle classe</button>
             </div>
         </div>
     </main>
@@ -248,9 +113,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Créer un compte</h3>
-                <button class="close-btn" id="btn-close-modal">&times;</button>
+                <button class="close-btn" id="btn-close-account-modal">&times;</button>
             </div>
-            
             <form id="create-account-form">
                 <div class="form-group">
                     <label for="new-role">Type de compte</label>
@@ -259,141 +123,154 @@
                         <option value="professeur">Professeur</option>
                     </select>
                 </div>
-                
                 <div style="display: flex; gap: 16px;">
                     <div class="form-group" style="flex: 1;">
                         <label for="new-prenom">Prénom</label>
-                        <input type="text" id="new-prenom" required placeholder="Ex: Jean">
+                        <input type="text" id="new-prenom" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label for="new-nom">Nom</label>
-                        <input type="text" id="new-nom" required placeholder="Ex: Dupont">
+                        <input type="text" id="new-nom" required>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label for="new-email">Adresse Email</label>
-                    <input type="email" id="new-email" required placeholder="jean.dupont@lycee.fr">
+                    <input type="email" id="new-email" required>
                 </div>
-
                 <div class="form-group">
                     <label for="new-password">Mot de passe provisoire</label>
-                    <input type="password" id="new-password" required placeholder="Minimum 6 caractères">
+                    <input type="password" id="new-password" required>
                 </div>
-
-                <button type="submit" class="btn-action" id="submit-account-btn" style="margin-top: 10px;">Enregistrer l'utilisateur</button>
+                <button type="submit" class="btn-action" id="submit-account-btn">Enregistrer l'utilisateur</button>
             </form>
         </div>
     </div>
 
-    <!-- Scripts Logiques -->
+    <!-- Modale de Création de Classe -->
+    <div class="modal-overlay" id="class-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nouvelle Classe</h3>
+                <button class="close-btn" id="btn-close-class-modal">&times;</button>
+            </div>
+            <form id="create-class-form">
+                <div class="form-group">
+                    <label for="new-class-name">Nom de la classe</label>
+                    <input type="text" id="new-class-name" required placeholder="Ex: Seconde 1">
+                </div>
+                <button type="submit" class="btn-action" id="submit-class-btn">Ajouter la classe</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // 1. Initialisation Supabase
             const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
             
-            // Client principal pour la session actuelle
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-            
-            // L'astuce : Un client secondaire qui ne sauvegarde pas la session
-            // Ça permet à la Direction de créer un compte sans être déconnectée de son propre compte !
-            const secondarySupabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-                auth: { persistSession: false }
-            });
+            const secondarySupabase = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
 
-            // 2. Vérification de la session Direction
+            // 1. Vérification de la session
             async function checkSession() {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    window.location.href = 'index.html';
-                    return;
-                }
+                if (!session) { window.location.href = 'index.html'; return; }
 
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('nom, prenom, role')
-                    .eq('id', session.user.id)
-                    .single();
-
+                const { data: profileData } = await supabase.from('profiles').select('nom, prenom, role').eq('id', session.user.id).single();
                 if (!profileData || profileData.role !== 'direction') {
-                    alert("Accès non autorisé.");
-                    window.location.href = 'index.html';
-                    return;
+                    window.location.href = 'index.html'; return;
                 }
-
                 document.getElementById('user-name').innerText = `${profileData.prenom} ${profileData.nom}`;
+                
+                // Charger les classes une fois connecté
+                fetchClasses();
             }
-
             checkSession();
 
-            // 3. Déconnexion
             document.getElementById('btn-logout').addEventListener('click', async () => {
                 await supabase.auth.signOut();
                 window.location.href = 'index.html';
             });
 
-            // 4. Gestion de la Fenêtre Modale
-            const modal = document.getElementById('account-modal');
-            const form = document.getElementById('create-account-form');
-
-            document.getElementById('btn-open-modal').addEventListener('click', () => {
-                modal.classList.add('active');
-            });
-
-            document.getElementById('btn-close-modal').addEventListener('click', () => {
-                modal.classList.remove('active');
-                form.reset();
-            });
-
-            // 5. Logique de création de compte
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
+            // 2. Gestion de l'affichage des classes
+            async function fetchClasses() {
+                const listContainer = document.getElementById('class-list-container');
+                const { data: classes, error } = await supabase.from('classes').select('*').order('nom');
                 
-                const submitBtn = document.getElementById('submit-account-btn');
-                submitBtn.innerText = "Création en cours...";
-                submitBtn.disabled = true;
+                if (error) {
+                    listContainer.innerHTML = `<div class="empty-msg">Erreur de chargement.</div>`;
+                    return;
+                }
 
-                const role = document.getElementById('new-role').value;
-                const prenom = document.getElementById('new-prenom').value;
-                const nom = document.getElementById('new-nom').value;
-                const email = document.getElementById('new-email').value;
-                const password = document.getElementById('new-password').value;
+                if (classes.length === 0) {
+                    listContainer.innerHTML = `<div class="empty-msg">Aucune classe pour le moment.</div>`;
+                    return;
+                }
 
+                listContainer.innerHTML = '';
+                classes.forEach(c => {
+                    const li = document.createElement('li');
+                    li.innerText = c.nom;
+                    listContainer.appendChild(li);
+                });
+            }
+
+            // 3. Gestion des Modales (Comptes)
+            const accountModal = document.getElementById('account-modal');
+            document.getElementById('btn-open-account-modal').addEventListener('click', () => accountModal.classList.add('active'));
+            document.getElementById('btn-close-account-modal').addEventListener('click', () => accountModal.classList.remove('active'));
+
+            document.getElementById('create-account-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submit-account-btn');
+                btn.disabled = true; btn.innerText = "Création...";
+                
                 try {
-                    // Étape A : Créer l'utilisateur dans l'authentification avec le client secondaire
                     const { data: authData, error: authError } = await secondarySupabase.auth.signUp({
-                        email: email,
-                        password: password
+                        email: document.getElementById('new-email').value,
+                        password: document.getElementById('new-password').value
                     });
-
                     if (authError) throw authError;
 
-                    if (!authData.user) {
-                        throw new Error("Impossible de créer l'utilisateur. Vérifiez que la confirmation d'email est bien désactivée dans Supabase.");
-                    }
-
-                    // Étape B : Insérer le profil dans la table 'profiles' avec le client principal
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert([
-                            { id: authData.user.id, role: role, nom: nom, prenom: prenom }
-                        ]);
-
-                    if (profileError) throw profileError;
-
-                    // Succès !
-                    alert(`✅ Le compte ${role} pour ${prenom} ${nom} a été créé avec succès !`);
-                    modal.classList.remove('active');
-                    form.reset();
-
+                    await supabase.from('profiles').insert([{
+                        id: authData.user.id,
+                        role: document.getElementById('new-role').value,
+                        nom: document.getElementById('new-nom').value,
+                        prenom: document.getElementById('new-prenom').value
+                    }]);
+                    alert("Compte créé avec succès !");
+                    accountModal.classList.remove('active');
+                    e.target.reset();
                 } catch (error) {
-                    alert("Erreur lors de la création : " + error.message);
-                    console.error(error);
+                    alert("Erreur: " + error.message);
                 } finally {
-                    submitBtn.innerText = "Enregistrer l'utilisateur";
-                    submitBtn.disabled = false;
+                    btn.disabled = false; btn.innerText = "Enregistrer l'utilisateur";
+                }
+            });
+
+            // 4. Gestion des Modales (Classes)
+            const classModal = document.getElementById('class-modal');
+            document.getElementById('btn-open-class-modal').addEventListener('click', () => classModal.classList.add('active'));
+            document.getElementById('btn-close-class-modal').addEventListener('click', () => classModal.classList.remove('active'));
+
+            document.getElementById('create-class-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submit-class-btn');
+                btn.disabled = true; btn.innerText = "Ajout en cours...";
+                
+                const className = document.getElementById('new-class-name').value;
+
+                try {
+                    const { error } = await supabase.from('classes').insert([{ nom: className }]);
+                    if (error) throw error;
+                    
+                    classModal.classList.remove('active');
+                    e.target.reset();
+                    fetchClasses(); // Recharge la liste instantanément
+                } catch (error) {
+                    alert("Erreur lors de la création de la classe : " + error.message);
+                } finally {
+                    btn.disabled = false; btn.innerText = "Ajouter la classe";
                 }
             });
         });
