@@ -40,7 +40,7 @@
         .course-header { background-color: var(--primary); padding: 4px; font-size: 12px; font-weight: 700; color: white; text-align: center; }
         .course-body { background-color: #e0f2fe; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; font-size: 11px; text-align: center; font-weight: 500; color: #0f172a; }
         .course-card.annule { opacity: 0.6; pointer-events: none; }
-        .course-card.annule .course-header { background-color: #64748b; text-decoration: line-through; }
+        .course-card.annule .course-header { background-color: #64748b; text-decoration: line-title; }
         .course-card.annule .course-body { background-color: #f1f5f9; color: #64748b; }
 
         .card-list { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
@@ -86,142 +86,119 @@
     </main>
 
     <script>
-        // Déclaration unique de Supabase
-        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        let currentUser = null;
-        let classeId = null;
-
-        // Déclaration globale de switchTab pour qu'elle soit accessible par les boutons HTML
-        window.switchTab = function(tabId, element) {
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            element.classList.add('active');
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(`view-${tabId}`).classList.add('active');
-
-            const titles = { 'edt': 'Mon Emploi du temps', 'devoirs': 'Travail à faire', 'absences': 'Mes Absences' };
-            document.getElementById('page-title').innerText = titles[tabId];
-
-            if (tabId === 'devoirs') loadDevoirs();
-            if (tabId === 'absences') loadAbsences();
-        }
-
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return window.location.href = 'index.html';
-
-            const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-            if (!profile || profile.role !== 'eleve') return window.location.href = 'index.html';
-
-            currentUser = profile;
-            classeId = profile.classe_id;
-            document.getElementById('user-name').innerText = `${profile.prenom} ${profile.nom}`;
-
-            buildGridHeaders();
-            if (classeId) loadEDT();
-        }
-
-        function buildGridHeaders() {
-            const grid = document.getElementById('schedule-grid');
-            for(let i = 8; i <= 16; i++) {
-                grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
-            }
-        }
-
-        async function loadEDT() {
-            const { data: cours } = await supabase
-                .from('cours')
-                .select('id, heure_debut, heure_fin, statut, motif, matieres(nom), profiles!cours_prof_id_fkey(nom)')
-                .eq('classe_id', classeId);
-
-            const grid = document.getElementById('schedule-grid');
-            if(cours) cours.forEach(c => {
-                const dateDebut = new Date(c.heure_debut);
-                const dayOfWeek = dateDebut.getDay();
-                if (dayOfWeek < 1 || dayOfWeek > 5) return;
-                
-                const startHour = dateDebut.getHours();
-                const duration = new Date(c.heure_fin).getHours() - startHour;
-                
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.style.gridColumn = dayOfWeek + 1;
-                cell.style.gridRowStart = startHour - 6;
-                if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
-
-                const isAnnule = c.statut === 'annule' ? 'annule' : '';
-                cell.innerHTML = `
-                    <div class="course-card ${isAnnule}">
-                        <div class="course-header">${c.matieres ? c.matieres.nom : 'Matière'}</div>
-                        <div class="course-body">
-                            <span style="font-weight:bold;">M. ${c.profiles ? c.profiles.nom : ''}</span>
-                            ${isAnnule ? `<span style="color:red; margin-top:5px;">${c.motif || 'Annulé'}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(cell);
-            });
-        }
-
-        async function loadDevoirs() {
-            const container = document.getElementById('devoirs-list');
-            const { data: coursClasse } = await supabase.from('cours').select('id, matieres(nom)').eq('classe_id', classeId);
-            if (!coursClasse || coursClasse.length === 0) return container.innerHTML = '<p>Aucun cours trouvé.</p>';
-
-            const coursIds = coursClasse.map(c => c.id);
-            const { data: devoirs } = await supabase.from('devoirs').select('*').in('cours_id', coursIds);
-
-            if (!devoirs || devoirs.length === 0) return container.innerHTML = '<p>Aucun travail à faire ! 🎉</p>';
-
-            container.innerHTML = devoirs.map(d => {
-                const matiere = coursClasse.find(c => c.id === d.cours_id)?.matieres?.nom || 'Matière';
-                return `<div class="item-card"><h3>${matiere}</h3><p>${d.contenu}</p><span class="item-date">Pour le : ${d.date_limite}</span></div>`;
-            }).join('');
-        }
-
-        async function loadAbsences() {
-            const container = document.getElementById('absences-list');
-            const { data: absences } = await supabase.from('absences_eleves').select('statut, date_saisie, cours(matieres(nom))').eq('eleve_id', currentUser.id).neq('statut', 'present');
-
-            if (!absences || absences.length === 0) return container.innerHTML = '<p>Aucune absence ni retard ! 👏</p>';
-
-            container.innerHTML = absences.map(a => `
-                <div class="item-card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <h3>${a.cours?.matieres?.nom || 'Cours'}</h3>
-                        <span class="${a.statut === 'retard' ? 'badge-retard' : 'badge-absent'}">${a.statut}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
-        
-        // Lancement
-        init();
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>ENT - Élève</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-    <div id="content">Chargement propre...</div>
-    <script>
-        // Le script est encapsulé pour éviter toute collision
         (function() {
             const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            let currentUser = null;
+            let classeId = null;
+
+            window.switchTab = function(tabId, element) {
+                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                element.classList.add('active');
+                document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+                document.getElementById(`view-${tabId}`).classList.add('active');
+
+                const titles = { 'edt': 'Mon Emploi du temps', 'devoirs': 'Travail à faire', 'absences': 'Mes Absences' };
+                document.getElementById('page-title').innerText = titles[tabId];
+
+                if (tabId === 'devoirs') loadDevoirs();
+                if (tabId === 'absences') loadAbsences();
+            }
+
+            async function init() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return window.location.href = 'index.html';
+
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+                if (!profile || profile.role !== 'eleve') return window.location.href = 'index.html';
+
+                currentUser = profile;
+                classeId = profile.classe_id;
+                document.getElementById('user-name').innerText = `${profile.prenom} ${profile.nom}`;
+
+                buildGridHeaders();
+                if (classeId) loadEDT();
+            }
+
+            function buildGridHeaders() {
+                const grid = document.getElementById('schedule-grid');
+                for(let i = 8; i <= 16; i++) {
+                    grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
+                }
+            }
+
+            async function loadEDT() {
+                const { data: cours } = await supabase
+                    .from('cours')
+                    .select('id, heure_debut, heure_fin, statut, motif, matieres(nom), profiles!cours_prof_id_fkey(nom)')
+                    .eq('classe_id', classeId);
+
+                const grid = document.getElementById('schedule-grid');
+                if(cours) cours.forEach(c => {
+                    const dateDebut = new Date(c.heure_debut);
+                    const dayOfWeek = dateDebut.getDay();
+                    if (dayOfWeek < 1 || dayOfWeek > 5) return;
+                    
+                    const startHour = dateDebut.getHours();
+                    const duration = new Date(c.heure_fin).getHours() - startHour;
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.style.gridColumn = dayOfWeek + 1;
+                    cell.style.gridRowStart = startHour - 6;
+                    if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
+
+                    const isAnnule = c.statut === 'annule' ? 'annule' : '';
+                    cell.innerHTML = `
+                        <div class="course-card ${isAnnule}">
+                            <div class="course-header">${c.matieres ? c.matieres.nom : 'Matière'}</div>
+                            <div class="course-body">
+                                <span style="font-weight:bold;">M. ${c.profiles ? c.profiles.nom : ''}</span>
+                                ${isAnnule ? `<span style="color:red; margin-top:5px;">${c.motif || 'Annulé'}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(cell);
+                });
+            }
+
+            async function loadDevoirs() {
+                const container = document.getElementById('devoirs-list');
+                const { data: coursClasse } = await supabase.from('cours').select('id, matieres(nom)').eq('classe_id', classeId);
+                if (!coursClasse || coursClasse.length === 0) return container.innerHTML = '<p>Aucun cours trouvé.</p>';
+
+                const coursIds = coursClasse.map(c => c.id);
+                const { data: devoirs } = await supabase.from('devoirs').select('*').in('cours_id', coursIds);
+
+                if (!devoirs || devoirs.length === 0) return container.innerHTML = '<p>Aucun travail à faire ! 🎉</p>';
+
+                container.innerHTML = devoirs.map(d => {
+                    const matiere = coursClasse.find(c => c.id === d.cours_id)?.matieres?.nom || 'Matière';
+                    return `<div class="item-card"><h3>${matiere}</h3><p>${d.contenu}</p><span class="item-date">Pour le : ${d.date_limite}</span></div>`;
+                }).join('');
+            }
+
+            async function loadAbsences() {
+                const container = document.getElementById('absences-list');
+                const { data: absences } = await supabase.from('absences_eleves').select('statut, date_saisie, cours(matieres(nom))').eq('eleve_id', currentUser.id).neq('statut', 'present');
+
+                if (!absences || absences.length === 0) return container.innerHTML = '<p>Aucune absence ni retard ! 👏</p>';
+
+                container.innerHTML = absences.map(a => `
+                    <div class="item-card">
+                        <div style="display:flex; justify-content:space-between;">
+                            <h3>${a.cours?.matieres?.nom || 'Cours'}</h3>
+                            <span class="${a.statut === 'retard' ? 'badge-retard' : 'badge-absent'}">${a.statut}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
             
-            console.log("Supabase initialisé avec succès.");
-            document.getElementById('content').innerText = "Le système est prêt.";
+            init();
         })();
     </script>
 </body>
