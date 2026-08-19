@@ -2,213 +2,75 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENT - Direction (Lycée Paul de Staël)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
-            --border-color: #e2e8f0; --primary: #8b5cf6; --primary-hover: #7c3aed; --danger: #ef4444; --warning: #f59e0b;
-        }
-        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Sidebar & Layout */
-        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
-        .logo { font-size: 18px; font-weight: 700; margin-bottom: 40px; color: var(--primary); }
-        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
-        .logout-btn:hover { background: var(--danger); color: white; }
+        :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #8b5cf6; --danger: #ef4444; --warning: #f59e0b; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; }
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        h1 { margin: 0; font-size: 28px; font-weight: 700; }
-        .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
-
-        /* Grille & Cartes */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
-        .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px;}
-        .card h2 { margin: 0 0 8px 0; font-size: 18px; color: var(--primary); border-bottom: 2px solid #f3e8ff; padding-bottom: 8px; }
-        .card p { color: var(--text-muted); font-size: 13px; margin: 0; line-height: 1.5; }
-        
-        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
-        .btn-action:hover { background: var(--primary-hover); }
-        .btn-secondary { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
-        .btn-secondary:hover { background: var(--border-color); }
-        .btn-warning { background: var(--warning); color: white; border: none; }
-
-        /* Modales */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
+        .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; }
+        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-secondary { background: #f1f5f9; color: var(--text-main); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: white; width: 100%; max-width: 500px; padding: 32px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
-        .close-btn { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; box-sizing: border-box; outline: none; }
+        .modal-content { background: white; padding: 32px; border-radius: 20px; width: 450px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-
     <nav class="sidebar">
-        <div class="logo">Lycée Paul de Staël</div>
-        <button class="logout-btn" id="btn-logout">Se déconnecter</button>
+        <div style="font-weight:700; margin-bottom:40px;">Lycée Paul de Staël</div>
+        <button class="btn-secondary" onclick="location.reload()">Actualiser</button>
+        <button class="btn-action" style="margin-top:auto; background:var(--danger);" id="btn-logout">Se déconnecter</button>
     </nav>
-
     <main class="main-content">
-        <header class="header">
-            <h1>Administration Globale</h1>
-            <div class="user-badge" id="user-name">Chargement...</div>
-        </header>
-
+        <h1>Administration Globale</h1>
         <div class="grid">
-            <!-- Gestion Structure -->
-            <div class="card">
-                <h2>1. Structure & Comptes</h2>
-                <p>Création des profils, classes et matières.</p>
-                <button class="btn-action" id="btn-open-account">Créer un compte</button>
-                <button class="btn-action btn-secondary" id="btn-open-class">Créer une classe</button>
-                <button class="btn-action btn-secondary" id="btn-open-subject">Créer une matière</button>
-            </div>
-            
-            <!-- Emplois du temps -->
-            <div class="card">
-                <h2>2. Emplois du temps</h2>
-                <p>Lier une classe, un professeur et une matière.</p>
-                <button class="btn-action" id="btn-open-edt">Planifier un cours</button>
-                <button class="btn-action btn-secondary" onclick="alert('La messagerie globale sera bientôt déployée.')">Messagerie globale</button>
-            </div>
-
-            <!-- Absences -->
-            <div class="card">
-                <h2>3. Gestion des Absences</h2>
-                <p>Déclarer un professeur absent pour griser ses cours.</p>
-                <button class="btn-action btn-warning" id="btn-open-absence">Déclarer un prof absent</button>
-            </div>
+            <div class="card"><h2>Comptes</h2><button class="btn-action" onclick="toggle('modal-account')">Créer un compte</button></div>
+            <div class="card"><h2>Structure</h2><button class="btn-action" onclick="toggle('modal-class')">Créer une classe</button><button class="btn-action" onclick="toggle('modal-subject')">Créer une matière</button></div>
+            <div class="card"><h2>Emploi du temps</h2><button class="btn-action" onclick="toggle('modal-edt')">Planifier un cours</button><button class="btn-action" style="background:var(--warning);" onclick="toggle('modal-absence')">Absence Professeur</button></div>
+            <div class="card"><h2>Messages</h2><button class="btn-action" onclick="toggle('modal-msg')">Message global</button></div>
         </div>
     </main>
 
-    <!-- Modale : Planifier un cours -->
-    <div class="modal-overlay" id="modal-edt">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Planifier un cours</h3><button class="close-btn" id="btn-close-edt">&times;</button></div>
-            <form id="form-edt">
-                <div class="form-group"><label>Classe</label><select id="edt-class" required></select></div>
-                <div class="form-group"><label>Professeur</label><select id="edt-prof" required></select></div>
-                <div class="form-group"><label>Matière</label><select id="edt-subject" required></select></div>
-                <div class="form-group"><label>Date et Heure de début</label><input type="datetime-local" id="edt-start" required></div>
-                <div class="form-group"><label>Date et Heure de fin</label><input type="datetime-local" id="edt-end" required></div>
-                <button type="submit" class="btn-action">Créer le cours</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modale : Déclarer Absence -->
-    <div class="modal-overlay" id="modal-absence">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Absence Professeur</h3><button class="close-btn" id="btn-close-absence">&times;</button></div>
-            <form id="form-absence">
-                <div class="form-group"><label>Professeur absent</label><select id="abs-prof" required></select></div>
-                <div class="form-group"><label>Du (Date et Heure)</label><input type="datetime-local" id="abs-start" required></div>
-                <div class="form-group"><label>Au (Date et Heure)</label><input type="datetime-local" id="abs-end" required></div>
-                <button type="submit" class="btn-action btn-warning">Griser et annuler ses cours</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Les autres modales (Compte, Classe, Matière) sont gardées minimalistes pour le fonctionnement -->
-    <div class="modal-overlay" id="modal-account"><div class="modal-content"><div class="modal-header"><h3>Nouveau compte</h3><button class="close-btn" id="btn-close-account">&times;</button></div><form id="form-account"><div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div><div class="form-group"><label>Prénom</label><input type="text" id="acc-prenom" required></div><div class="form-group"><label>Nom</label><input type="text" id="acc-nom" required></div><div class="form-group"><label>Email</label><input type="email" id="acc-email" required></div><div class="form-group"><label>Mot de passe</label><input type="password" id="acc-pwd" required></div><button type="submit" class="btn-action">Créer</button></form></div></div>
-    <div class="modal-overlay" id="modal-class"><div class="modal-content"><div class="modal-header"><h3>Nouvelle classe</h3><button class="close-btn" id="btn-close-class">&times;</button></div><form id="form-class"><div class="form-group"><label>Nom</label><input type="text" id="class-name" required></div><button type="submit" class="btn-action">Créer</button></form></div></div>
-    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><div class="modal-header"><h3>Nouvelle matière</h3><button class="close-btn" id="btn-close-subject">&times;</button></div><form id="form-subject"><div class="form-group"><label>Nom</label><input type="text" id="subject-name" required></div><button type="submit" class="btn-action">Créer</button></form></div></div>
+    <!-- Modales -->
+    <div class="modal-overlay" id="modal-account"><div class="modal-content"><h3>Nouveau compte</h3><form id="form-account"><div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div><input type="text" id="acc-prenom" placeholder="Prénom" required><input type="text" id="acc-nom" placeholder="Nom" required style="margin-top:10px;"><input type="email" id="acc-email" placeholder="Email" required style="margin-top:10px;"><input type="password" id="acc-pwd" placeholder="Mot de passe" required style="margin-top:10px;"><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Planifier cours</h3><form id="form-edt"><select id="edt-class" style="margin-bottom:10px;"></select><select id="edt-prof" style="margin-bottom:10px;"></select><select id="edt-subject" style="margin-bottom:10px;"></select><input type="datetime-local" id="edt-start" required><input type="datetime-local" id="edt-end" required style="margin-top:10px;"><button class="btn-action" style="margin-top:15px;">Planifier</button></form></div></div>
+    <div class="modal-overlay" id="modal-absence"><div class="modal-content"><h3>Absence Prof</h3><form id="form-absence"><select id="abs-prof"></select><input type="datetime-local" id="abs-start" required><input type="datetime-local" id="abs-end" required><button class="btn-action" style="background:var(--warning);">Griser cours</button></form></div></div>
+    <div class="modal-overlay" id="modal-msg"><div class="modal-content"><h3>Message Global</h3><form id="form-msg"><textarea id="msg-content" required></textarea><button class="btn-action">Envoyer</button></form></div></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-            const secondarySupabase = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+        const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
+        const secondary = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8', { auth: { persistSession: false } });
 
-            async function init() {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) return window.location.href = 'index.html';
-                const { data } = await supabase.from('profiles').select('nom, prenom, role').eq('id', session.user.id).single();
-                if (data.role !== 'direction') return window.location.href = 'index.html';
-                document.getElementById('user-name').innerText = `${data.prenom} ${data.nom}`;
-                loadDropdowns();
-            }
-            init();
-
-            // Utilities pour les modales
-            function toggleModal(id, show) { document.getElementById(id).classList[show ? 'add' : 'remove']('active'); }
-            
-            // Attacher les events d'ouverture/fermeture
-            const modals = ['account', 'class', 'subject', 'edt', 'absence'];
-            modals.forEach(m => {
-                document.getElementById(`btn-open-${m}`).addEventListener('click', () => toggleModal(`modal-${m}`, true));
-                document.getElementById(`btn-close-${m}`).addEventListener('click', () => toggleModal(`modal-${m}`, false));
+        function toggle(id) { document.getElementById(id).classList.toggle('active'); loadData(); }
+        async function loadData() {
+            const [profs, classes, subs] = await Promise.all([
+                supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur'),
+                supabase.from('classes').select('id, nom'),
+                supabase.from('matieres').select('id, nom')
+            ]);
+            document.querySelectorAll('select').forEach(sel => {
+                if(sel.id.includes('prof') && profs.data) sel.innerHTML = profs.data.map(p => `<option value="${p.id}">${p.prenom} ${p.nom}</option>`);
+                if(sel.id.includes('class') && classes.data) sel.innerHTML = classes.data.map(c => `<option value="${c.id}">${c.nom}</option>`);
+                if(sel.id.includes('subject') && subs.data) sel.innerHTML = subs.data.map(s => `<option value="${s.id}">${s.nom}</option>`);
             });
-
-            // Chargement des listes déroulantes
-            async function loadDropdowns() {
-                const { data: profs } = await supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur');
-                const { data: classes } = await supabase.from('classes').select('id, nom');
-                const { data: subjects } = await supabase.from('matieres').select('id, nom');
-
-                const profOptions = profs ? profs.map(p => `<option value="${p.id}">${p.prenom} ${p.nom}</option>`).join('') : '';
-                document.getElementById('edt-prof').innerHTML = profOptions;
-                document.getElementById('abs-prof').innerHTML = profOptions;
-                
-                if(classes) document.getElementById('edt-class').innerHTML = classes.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
-                if(subjects) document.getElementById('edt-subject').innerHTML = subjects.map(s => `<option value="${s.id}">${s.nom}</option>`).join('');
-            }
-
-            // Soumission : Compte
-            document.getElementById('form-account').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const { data: authData, error: authError } = await secondarySupabase.auth.signUp({
-                    email: document.getElementById('acc-email').value,
-                    password: document.getElementById('acc-pwd').value
-                });
-                if (authError) return alert(authError.message);
-                await supabase.from('profiles').insert([{ id: authData.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value }]);
-                alert("Compte créé !"); toggleModal('modal-account', false); e.target.reset(); loadDropdowns();
-            });
-
-            // Soumission : Classe & Matière
-            document.getElementById('form-class').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('classes').insert([{ nom: document.getElementById('class-name').value }]); alert("Classe créée !"); toggleModal('modal-class', false); loadDropdowns(); });
-            document.getElementById('form-subject').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('matieres').insert([{ nom: document.getElementById('subject-name').value }]); alert("Matière créée !"); toggleModal('modal-subject', false); loadDropdowns(); });
-
-            // Soumission : Créer un cours
-            document.getElementById('form-edt').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const { error } = await supabase.from('cours').insert([{
-                    classe_id: document.getElementById('edt-class').value,
-                    prof_id: document.getElementById('edt-prof').value,
-                    matiere_id: document.getElementById('edt-subject').value,
-                    heure_debut: new Date(document.getElementById('edt-start').value).toISOString(),
-                    heure_fin: new Date(document.getElementById('edt-end').value).toISOString(),
-                    statut: 'maintenu'
-                }]);
-                if(error) alert("Erreur : " + error.message); else { alert("Cours planifié avec succès !"); toggleModal('modal-edt', false); e.target.reset(); }
-            });
-
-            // Soumission : Déclarer Absence
-            document.getElementById('form-absence').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const profId = document.getElementById('abs-prof').value;
-                const start = new Date(document.getElementById('abs-start').value).toISOString();
-                const end = new Date(document.getElementById('abs-end').value).toISOString();
-                
-                const { error } = await supabase.from('cours')
-                    .update({ statut: 'annule', motif: 'Professeur absent' })
-                    .eq('prof_id', profId)
-                    .gte('heure_debut', start)
-                    .lte('heure_fin', end);
-                
-                if(error) alert("Erreur : " + error.message); else { alert("Absence déclarée. Les cours sont grisés !"); toggleModal('modal-absence', false); }
-            });
-
-            document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
-        });
+        }
+        
+        document.getElementById('form-account').onsubmit = async(e) => { e.preventDefault(); const {data} = await secondary.auth.signUp({email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value}); await supabase.from('profiles').insert([{id: data.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value}]); alert("Créé !"); location.reload(); };
+        document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); location.reload(); };
+        document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); location.reload(); };
+        document.getElementById('form-edt').onsubmit = async(e) => { e.preventDefault(); await supabase.from('cours').insert([{classe_id: document.getElementById('edt-class').value, prof_id: document.getElementById('edt-prof').value, matiere_id: document.getElementById('edt-subject').value, heure_debut: new Date(document.getElementById('edt-start').value).toISOString(), heure_fin: new Date(document.getElementById('edt-end').value).toISOString(), statut: 'maintenu'}]); alert("Planifié !"); location.reload(); };
+        document.getElementById('form-absence').onsubmit = async(e) => { e.preventDefault(); await supabase.from('cours').update({statut: 'annule', motif: 'Professeur absent'}).eq('prof_id', document.getElementById('abs-prof').value).gte('heure_debut', new Date(document.getElementById('abs-start').value).toISOString()).lte('heure_fin', new Date(document.getElementById('abs-end').value).toISOString()); alert("Grisé !"); location.reload(); };
+        document.getElementById('form-msg').onsubmit = async(e) => { e.preventDefault(); await supabase.from('messages').insert([{contenu: document.getElementById('msg-content').value}]); alert("Diffusé !"); location.reload(); };
+        document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
+        loadData();
     </script>
 </body>
 </html>
