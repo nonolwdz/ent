@@ -6,84 +6,103 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #8b5cf6; --danger: #ef4444; --warning: #f59e0b; }
+        :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #8b5cf6; --danger: #ef4444; }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); display: flex; height: 100vh; }
         .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; }
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
         .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; }
         .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #f1f5f9; color: var(--text-main); }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 32px; border-radius: 20px; width: 450px; max-height: 90vh; overflow-y: auto; }
         .form-group { margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <nav class="sidebar">
         <div style="font-weight:700; margin-bottom:40px;">Lycée Paul de Staël</div>
-        <button class="btn-secondary" onclick="location.reload()">Actualiser</button>
         <button class="btn-action" style="margin-top:auto; background:var(--danger);" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
         <h1>Administration Globale</h1>
         <div class="grid">
-            <div class="card"><h2>Comptes</h2><button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button></div>
+            <div class="card"><h2>Comptes & Élèves</h2><button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button><button class="btn-action" style="background:#0ea5e9;" onclick="openModal('modal-affect')">Associer Élève à une classe</button></div>
             <div class="card"><h2>Structure</h2><button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button><button class="btn-action" onclick="openModal('modal-subject')">Créer une matière</button></div>
-            <div class="card"><h2>Emploi du temps</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un cours</button><button class="btn-action" style="background:var(--warning);" onclick="openModal('modal-absence')">Absence Professeur</button></div>
-            <div class="card"><h2>Messages</h2><button class="btn-action" onclick="openModal('modal-msg')">Message global</button></div>
+            <div class="card"><h2>Emploi du temps type</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau récurrent</button></div>
         </div>
     </main>
 
     <!-- Modales -->
     <div class="modal-overlay" id="modal-account"><div class="modal-content"><h3>Nouveau compte</h3><form id="form-account"><div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div><input type="text" id="acc-prenom" placeholder="Prénom" required><input type="text" id="acc-nom" placeholder="Nom" required style="margin-top:10px;"><input type="email" id="acc-email" placeholder="Email" required style="margin-top:10px;"><input type="password" id="acc-pwd" placeholder="Mot de passe" required style="margin-top:10px;"><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
-    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
-    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
-    <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Planifier cours</h3><form id="form-edt"><select id="edt-class" style="margin-bottom:10px;"></select><select id="edt-prof" style="margin-bottom:10px;"></select><select id="edt-subject" style="margin-bottom:10px;"></select><input type="datetime-local" id="edt-start" required><input type="datetime-local" id="edt-end" required style="margin-top:10px;"><button class="btn-action" style="margin-top:15px;">Planifier</button></form></div></div>
-    <div class="modal-overlay" id="modal-absence"><div class="modal-content"><h3>Absence Prof</h3><form id="form-absence"><select id="abs-prof"></select><input type="datetime-local" id="abs-start" required><input type="datetime-local" id="abs-end" required><button class="btn-action" style="background:var(--warning);">Griser cours</button></form></div></div>
-    <div class="modal-overlay" id="modal-msg"><div class="modal-content"><h3>Message Global</h3><form id="form-msg"><textarea id="msg-content" required></textarea><button class="btn-action">Envoyer</button></form></div></div>
+    
+    <div class="modal-overlay" id="modal-affect"><div class="modal-content"><h3>Affecter un élève</h3><form id="form-affect"><div class="form-group"><label>Choisir l'élève</label><select id="affect-eleve"></select></div><div class="form-group"><label>Choisir la classe</label><select id="affect-class"></select></div><button class="btn-action">Associer</button></form></div></div>
+
+    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom de la classe (ex: Seconde 1)" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom de la matière" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    
+    <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Créneau Récurrent (Toute l'année)</h3><form id="form-edt">
+        <div class="form-group"><label>Classe</label><select id="edt-class"></select></div>
+        <div class="form-group"><label>Professeur</label><select id="edt-prof"></select></div>
+        <div class="form-group"><label>Matière</label><select id="edt-subject"></select></div>
+        <div class="form-group"><label>Jour de la semaine</label><select id="edt-jour"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option></select></div>
+        <div class="form-group"><label>Heure de début</label><input type="time" id="edt-start" required></div>
+        <div class="form-group"><label>Heure de fin</label><input type="time" id="edt-end" required></div>
+        <button class="btn-action">Enregistrer le cours type</button>
+    </form></div></div>
 
     <script>
         (function() {
-            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-            const secondary = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+            const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
+            const secondary = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8', { auth: { persistSession: false } });
 
-            window.openModal = function(id) {
+            window.openModal = async function(id) {
                 document.getElementById(id).classList.add('active');
-                loadDropdowns();
-            }
-
-            // Fermer la modale si on clique en dehors
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if(e.target === modal) modal.classList.remove('active');
-                });
-            });
-
-            async function loadDropdowns() {
-                const [profs, classes, subs] = await Promise.all([
+                const [profs, classes, subs, eleves] = await Promise.all([
                     supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur'),
                     supabase.from('classes').select('id, nom'),
-                    supabase.from('matieres').select('id, nom')
+                    supabase.from('matieres').select('id, nom'),
+                    supabase.from('profiles').select('id, nom, prenom').eq('role', 'eleve')
                 ]);
-                document.querySelectorAll('select').forEach(sel => {
-                    if(sel.id.includes('prof') && profs.data) sel.innerHTML = profs.data.map(p => `<option value="${p.id}">${p.prenom} ${p.nom}</option>`).join('');
-                    if(sel.id.includes('class') && classes.data) sel.innerHTML = classes.data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
-                    if(sel.id.includes('subject') && subs.data) sel.innerHTML = subs.data.map(s => `<option value="${s.id}">${s.nom}</option>`).join('');
-                });
+                if(profs.data) document.querySelectorAll('#edt-prof').forEach(s => s.innerHTML = profs.data.map(p => `<option value="${p.id}">${p.prenom} ${p.nom}</option>`).join(''));
+                if(classes.data) document.querySelectorAll('#edt-class, #affect-class').forEach(s => s.innerHTML = classes.data.map(c => `<option value="${c.id}">${c.nom}</option>`).join(''));
+                if(subs.data) document.querySelectorAll('#edt-subject').forEach(s => s.innerHTML = subs.data.map(m => `<option value="${m.id}">${m.nom}</option>`).join(''));
+                if(eleves.data) document.getElementById('affect-eleve').innerHTML = eleves.data.map(el => `<option value="${el.id}">${el.prenom} ${el.nom}</option>`).join('');
             }
-            
-            document.getElementById('form-account').onsubmit = async(e) => { e.preventDefault(); const {data} = await secondary.auth.signUp({email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value}); await supabase.from('profiles').insert([{id: data.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value}]); alert("Créé !"); location.reload(); };
+
+            document.querySelectorAll('.modal-overlay').forEach(m => m.onclick = (e) => { if(e.target === m) m.classList.remove('active'); });
+
+            document.getElementById('form-account').onsubmit = async(e) => {
+                e.preventDefault();
+                const {data} = await secondary.auth.signUp({email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value});
+                await supabase.from('profiles').insert([{id: data.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value}]);
+                alert("Compte créé !"); location.reload();
+            };
+
+            document.getElementById('form-affect').onsubmit = async(e) => {
+                e.preventDefault();
+                await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value);
+                alert("Élève associé à la classe avec succès !"); location.reload();
+            };
+
             document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); alert("Classe créée !"); location.reload(); };
             document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); alert("Matière créée !"); location.reload(); };
-            document.getElementById('form-edt').onsubmit = async(e) => { e.preventDefault(); await supabase.from('cours').insert([{classe_id: document.getElementById('edt-class').value, prof_id: document.getElementById('edt-prof').value, matiere_id: document.getElementById('edt-subject').value, heure_debut: new Date(document.getElementById('edt-start').value).toISOString(), heure_fin: new Date(document.getElementById('edt-end').value).toISOString(), statut: 'maintenu'}]); alert("Planifié !"); location.reload(); };
-            document.getElementById('form-absence').onsubmit = async(e) => { e.preventDefault(); await supabase.from('cours').update({statut: 'annule', motif: 'Professeur absent'}).eq('prof_id', document.getElementById('abs-prof').value).gte('heure_debut', new Date(document.getElementById('abs-start').value).toISOString()).lte('heure_fin', new Date(document.getElementById('abs-end').value).toISOString()); alert("Grisé !"); location.reload(); };
-            document.getElementById('form-msg').onsubmit = async(e) => { e.preventDefault(); await supabase.from('messages').insert([{contenu: document.getElementById('msg-content').value}]); alert("Diffusé !"); location.reload(); };
             
+            // Enregistrement dans une table 'cours_recurrents' pour toute l'année
+            document.getElementById('form-edt').onsubmit = async(e) => {
+                e.preventDefault();
+                await supabase.from('cours_recurrents').insert([{
+                    classe_id: document.getElementById('edt-class').value,
+                    prof_id: document.getElementById('edt-prof').value,
+                    matiere_id: document.getElementById('edt-subject').value,
+                    jour_semaine: parseInt(document.getElementById('edt-jour').value),
+                    heure_debut: document.getElementById('edt-start').value,
+                    heure_fin: document.getElementById('edt-end').value
+                }]);
+                alert("Créneau récurrent enregistré ! Il s'affichera chaque semaine."); location.reload();
+            };
+
             document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
         })();
     </script>
