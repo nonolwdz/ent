@@ -94,7 +94,21 @@
             }
 
             document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
-            init();
+           // Grille officielle du lycée (Heures de début et de fin de chaque créneau type)
+const creneauxHoraires = [
+    { debut: "08:30", fin: "09:25", ligne: 1 },
+    { debut: "09:25", fin: "10:20", ligne: 2 },
+    // Pause 10h20 - 10h35
+    { debut: "10:35", fin: "11:30", ligne: 4 },
+    { debut: "11:30", fin: "12:25", ligne: 5 },
+    // Cantine 12h25 - 13h05
+    { debut: "13:05", fin: "14:00", ligne: 7 },
+    { debut: "14:00", fin: "14:55", ligne: 8 },
+    { debut: "14:55", fin: "15:50", ligne: 9 },
+    // Pause 15h50 - 16h05
+    { debut: "16:05", fin: "17:00", ligne: 11 },
+    { debut: "17:00", fin: "17:55", ligne: 12 }
+]; init();
         })();
     </script>
 </body>
