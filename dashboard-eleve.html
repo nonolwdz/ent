@@ -86,6 +86,7 @@
     </main>
 
     <script>
+        // Déclaration unique de Supabase
         const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -93,7 +94,8 @@
         let currentUser = null;
         let classeId = null;
 
-        function switchTab(tabId, element) {
+        // Déclaration globale de switchTab pour qu'elle soit accessible par les boutons HTML
+        window.switchTab = function(tabId, element) {
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
@@ -196,6 +198,8 @@
         }
 
         document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
+        
+        // Lancement
         init();
     </script>
 </body>
