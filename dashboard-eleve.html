@@ -10,188 +10,85 @@
     
     <style>
         :root {
-            --bg-body: #f8fafc;
-            --bg-sidebar: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --primary: #0ea5e9; /* Bleu Élève */
-            --danger: #ef4444;
+            --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
+            --border-color: #e2e8f0; --primary: #0ea5e9; --danger: #ef4444;
             
-            /* Couleurs des matières (En-tête / Fond clair) */
-            --math-head: #dc2626; --math-body: #fee2e2;
-            --hg-head: #2563eb;   --hg-body: #dbeafe;
-            --fr-head: #d97706;   --fr-body: #fef3c7;
-            --svt-head: #16a34a;  --svt-body: #dcfce3;
-            --ang-head: #7c3aed;  --ang-body: #f3e8ff;
+            /* Couleurs génériques pour les matières générées dynamiquement */
+            --subject-head: #2563eb; --subject-body: #dbeafe;
         }
 
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Sidebar (Identique au style premium) */
-        .sidebar {
-            width: 260px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-        }
-
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .logo { font-size: 20px; font-weight: 700; margin-bottom: 40px; }
-        
-        .nav-link {
-            padding: 12px 16px; border-radius: 10px; color: var(--text-muted);
-            text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer;
-            transition: all 0.2s;
-        }
-
+        .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background-color: #e0f2fe; color: var(--primary); }
-        
-        .logout-btn {
-            margin-top: auto; padding: 12px; border: 1px solid var(--danger);
-            color: var(--danger); background: transparent; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: 0.2s;
-        }
+        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: var(--danger); color: white; }
 
-        /* Contenu principal */
+        /* Main Content */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 24px; font-weight: 700; }
-        
-        .user-badge {
-            background: white; padding: 8px 16px; border-radius: 20px;
-            font-weight: 500; font-size: 14px; border: 1px solid var(--border-color);
-        }
+        .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
 
-        /* --- GRILLE EMPLOI DU TEMPS TYPE PRONOTE --- */
-        .schedule-container {
-            flex: 1;
-            background: white;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            overflow: auto; /* Permet de scroller si l'écran est petit */
-            padding: 20px;
-        }
-
+        /* Grille Emploi du Temps */
+        .schedule-container { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; padding: 20px; }
         .schedule-grid {
             display: grid;
-            /* 1 colonne pour les heures, 5 pour les jours */
             grid-template-columns: 60px repeat(5, minmax(180px, 1fr));
-            /* 1 ligne d'en-tête, puis des lignes pour chaque créneau d'une heure */
             grid-template-rows: 40px repeat(9, 70px); /* 8h à 17h */
-            gap: 2px;
-            background-color: var(--border-color); /* Crée les lignes de la grille */
-            border: 1px solid var(--border-color);
+            gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color);
+            position: relative;
         }
 
+        .grid-header { background-color: #f8fafc; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .time-label { background-color: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 500; display: flex; align-items: flex-start; justify-content: flex-end; padding: 5px 8px 0 0; }
+        
+        /* Design des cours générés */
         .grid-cell { background-color: #ffffff; position: relative; }
-        .grid-header { 
-            background-color: #f8fafc; font-weight: 600; color: var(--text-muted);
-            display: flex; align-items: center; justify-content: center; font-size: 14px;
-        }
-        .time-label {
-            background-color: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 500;
-            display: flex; align-items: flex-start; justify-content: flex-end; padding: 5px 8px 0 0;
-        }
-
-        /* --- DESIGN D'UN COURS (Deux couleurs) --- */
         .course-card {
-            position: absolute;
-            top: 2px; bottom: 2px; left: 2px; right: 2px;
-            border-radius: 6px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: transform 0.1s;
-            cursor: pointer;
+            position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px;
+            border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; cursor: pointer;
         }
         .course-card:hover { transform: scale(1.02); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-
-        .course-header {
-            padding: 4px; font-size: 12px; font-weight: 700; color: white; text-align: center;
-        }
+        .course-header { background-color: var(--subject-head); padding: 4px; font-size: 12px; font-weight: 700; color: white; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .course-body { background-color: var(--subject-body); flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; font-size: 11px; text-align: center; font-weight: 500; color: #1e3a8a; }
         
-        .course-body {
-            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 4px; font-size: 11px; text-align: center; font-weight: 500;
-        }
+        /* Style pour les cours annulés */
+        .course-card.annule { opacity: 0.6; }
+        .course-card.annule .course-header { background-color: #64748b; text-decoration: line-through; }
+        .course-card.annule .course-body { background-color: #f1f5f9; color: #64748b; }
+        .course-motif { color: var(--danger); font-weight: bold; margin-top: 2px; }
 
-        .prof-name { margin-bottom: 2px; }
-        .room { color: rgba(0,0,0,0.5); }
-
-        /* Couleurs appliquées par matière */
-        .math .course-header { background-color: var(--math-head); } .math .course-body { background-color: var(--math-body); color: #7f1d1d; }
-        .hg .course-header { background-color: var(--hg-head); } .hg .course-body { background-color: var(--hg-body); color: #1e3a8a; }
-        .fr .course-header { background-color: var(--fr-head); } .fr .course-body { background-color: var(--fr-body); color: #78350f; }
-        .svt .course-header { background-color: var(--svt-head); } .svt .course-body { background-color: var(--svt-body); color: #14532d; }
-        .ang .course-header { background-color: var(--ang-head); } .ang .course-body { background-color: var(--ang-body); color: #4c1d95; }
-
-        /* Emplacement sur la grille (Ligne / Colonne) */
-        /* Lundi = col 2, Mardi = col 3... */
-        /* 8h = row 2, 9h = row 3... */
-        .c-lundi { grid-column: 2; }
-        .c-mardi { grid-column: 3; }
-        .c-mercredi { grid-column: 4; }
-        .c-jeudi { grid-column: 5; }
-        .c-vendredi { grid-column: 6; }
-        
-        .r-8h { grid-row: 2; }
-        .r-9h { grid-row: 3; }
-        .r-10h { grid-row: 4; }
-        .r-11h { grid-row: 5; }
-        /* 12h = row 6 (Pause) */
-        .r-13h { grid-row: 7; }
-        .r-14h { grid-row: 8; }
-        .r-15h { grid-row: 9; }
-        .r-16h { grid-row: 10; }
-        
-        /* Cours de 2h */
-        .span-2 { grid-row-end: span 2; }
     </style>
 </head>
 <body>
 
-    <!-- Barre latérale -->
     <nav class="sidebar">
-        <div class="logo">Lycée Madame de Staël</div>
+        <div class="logo">🏢 Mon ENT</div>
         <a class="nav-link active">📅 Emploi du temps</a>
-        <a class="nav-link">📝 Cahier de textes</a>
-        <a class="nav-link">💬 Messagerie</a>
+        <a class="nav-link">📝 Travail à faire</a>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
-    <!-- Zone Principale -->
     <main class="main-content">
         <header class="header">
-            <h1>Mon Emploi du temps</h1>
+            <h1 id="page-title">Mon Emploi du temps</h1>
             <div class="user-badge" id="user-name">Chargement...</div>
         </header>
 
         <div class="schedule-container">
-            <div class="schedule-grid">
-                <!-- En-têtes des jours -->
-                <div class="grid-header"></div> <!-- Case vide haut-gauche -->
+            <div class="schedule-grid" id="schedule-grid">
+                <!-- En-têtes fixes -->
+                <div class="grid-header"></div>
                 <div class="grid-header">Lundi</div>
                 <div class="grid-header">Mardi</div>
                 <div class="grid-header">Mercredi</div>
                 <div class="grid-header">Jeudi</div>
                 <div class="grid-header">Vendredi</div>
-
-                <!-- Lignes du fond (Cases vides par défaut) -->
-                <!-- Pour simplifier le code, la CSS Grid place automatiquement les éléments grâce à leurs classes -->
 
                 <!-- Colonne des heures -->
                 <div class="time-label" style="grid-column: 1; grid-row: 2;">08h00</div>
@@ -203,98 +100,120 @@
                 <div class="time-label" style="grid-column: 1; grid-row: 8;">14h00</div>
                 <div class="time-label" style="grid-column: 1; grid-row: 9;">15h00</div>
                 <div class="time-label" style="grid-column: 1; grid-row: 10;">16h00</div>
-
-                <!-- ================= COURS D'EXEMPLE ================= -->
                 
-                <!-- LUNDI -->
-                <div class="grid-cell c-lundi r-8h span-2">
-                    <div class="course-card math">
-                        <div class="course-header">MATHÉMATIQUES</div>
-                        <div class="course-body">
-                            <span class="prof-name">M. CHASSAIGNE</span>
-                            <span class="room">Salle 14</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid-cell c-lundi r-10h">
-                    <div class="course-card ang">
-                        <div class="course-header">ANGLAIS LV1</div>
-                        <div class="course-body">
-                            <span class="prof-name">Mme MARTIN</span>
-                            <span class="room">Salle 04</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MARDI -->
-                <div class="grid-cell c-mardi r-9h">
-                    <div class="course-card hg">
-                        <div class="course-header">HISTOIRE-GÉO</div>
-                        <div class="course-body">
-                            <span class="prof-name">M. LEQUINT</span>
-                            <span class="room">Salle 22</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid-cell c-mardi r-10h span-2">
-                    <div class="course-card svt">
-                        <div class="course-header">S.V.T</div>
-                        <div class="course-body">
-                            <span class="prof-name">Mme DURAND</span>
-                            <span class="room">Labo 2</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MERCREDI -->
-                <div class="grid-cell c-mercredi r-8h span-2">
-                    <div class="course-card fr">
-                        <div class="course-header">FRANÇAIS</div>
-                        <div class="course-body">
-                            <span class="prof-name">Mme MOREAU</span>
-                            <span class="room">Salle 11</span>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Les cours seront injectés ici par le JavaScript -->
             </div>
         </div>
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            async function checkSession() {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    window.location.href = 'index.html';
-                    return;
-                }
+        async function initDashboard() {
+            // 1. Vérifier la session
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return window.location.href = 'index.html';
 
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('nom, prenom, role')
-                    .eq('id', session.user.id)
-                    .single();
+            // 2. Récupérer le profil et vérifier que c'est un élève
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('nom, prenom, role, classe_id')
+                .eq('id', session.user.id)
+                .single();
 
-                if (!profileData || profileData.role !== 'eleve') {
-                    alert("Accès non autorisé. Vous n'êtes pas Élève.");
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                document.getElementById('user-name').innerText = `${profileData.prenom} ${profileData.nom} (Élève)`;
+            if (!profile || profile.role !== 'eleve') {
+                alert("Accès refusé.");
+                window.location.href = 'index.html';
+                return;
             }
 
-            checkSession();
+            document.getElementById('user-name').innerText = `${profile.prenom} ${profile.nom} (Élève)`;
 
-            document.getElementById('btn-logout').addEventListener('click', async () => {
-                await supabase.auth.signOut();
-                window.location.href = 'index.html';
+            // Si l'élève n'a pas encore de classe assignée
+            if (!profile.classe_id) {
+                document.getElementById('page-title').innerText = "Aucune classe assignée";
+                return;
+            }
+
+            // 3. Charger l'emploi du temps de sa classe
+            fetchSchedule(profile.classe_id);
+        }
+
+        async function fetchSchedule(classeId) {
+            // Supabase permet de faire des jointures facilement pour récupérer le nom du prof et de la matière
+            const { data: cours, error } = await supabase
+                .from('cours')
+                .select(`
+                    id, heure_debut, heure_fin, statut, motif,
+                    matieres (nom),
+                    profiles!cours_prof_id_fkey (nom, prenom)
+                `)
+                .eq('classe_id', classeId);
+
+            if (error) {
+                console.error("Erreur chargement EDT:", error);
+                return;
+            }
+
+            const grid = document.getElementById('schedule-grid');
+
+            // 4. Placer chaque cours dans la grille
+            cours.forEach(c => {
+                const dateDebut = new Date(c.heure_debut);
+                const dateFin = new Date(c.heure_fin);
+                
+                // Obtenir le jour de la semaine (1 = Lundi, 5 = Vendredi)
+                // Attention : en JavaScript, 0 = Dimanche, 1 = Lundi
+                const dayOfWeek = dateDebut.getDay(); 
+                if (dayOfWeek < 1 || dayOfWeek > 5) return; // On ignore le week-end
+                
+                // La CSS Grid commence à la colonne 2 pour Lundi
+                const gridColumn = dayOfWeek + 1; 
+
+                // Obtenir l'heure (ex: 8 pour 8h00)
+                const startHour = dateDebut.getHours();
+                const endHour = dateFin.getHours();
+                
+                // La ligne 8h est la ligne 2 dans notre grille CSS
+                const gridRowStart = startHour - 6; 
+                const duration = endHour - startHour; // Nombre d'heures (span)
+
+                // Création de l'élément HTML du cours
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.style.gridColumn = gridColumn;
+                cell.style.gridRowStart = gridRowStart;
+                if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
+
+                // Gestion du statut (annulé ou maintenu)
+                const isAnnule = c.statut === 'annule' ? 'annule' : '';
+                const motifHtml = isAnnule && c.motif ? `<span class="course-motif">${c.motif}</span>` : '';
+
+                // Les noms récupérés via les jointures
+                const matiereNom = c.matieres ? c.matieres.nom : 'Matière Inconnue';
+                const profNom = c.profiles ? `M. ${c.profiles.nom}` : 'Prof Inconnu';
+
+                cell.innerHTML = `
+                    <div class="course-card ${isAnnule}">
+                        <div class="course-header">${matiereNom}</div>
+                        <div class="course-body">
+                            <span class="prof-name">${profNom}</span>
+                            ${motifHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(cell);
             });
+        }
+
+        // Lancement au chargement
+        initDashboard();
+
+        // Déconnexion
+        document.getElementById('btn-logout').addEventListener('click', () => { 
+            supabase.auth.signOut().then(() => window.location.href = 'index.html'); 
         });
     </script>
 </body>
