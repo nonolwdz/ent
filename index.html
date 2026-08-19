@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Supabase -->
+    <!-- Supabase (chargé une seule fois ici) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -83,56 +83,61 @@
     </div>
 
     <script>
-        const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
-        
-        let selectedRole = '';
-        const roleConfigs = {
-            'eleve': { title: 'Élève', color: '#0ea5e9' },
-            'professeur': { title: 'Enseignant', color: '#f59e0b' },
-            'direction': { title: 'Direction', color: '#8b5cf6' }
-        };
+        // Utilisation d'une fonction isolée pour éviter toute redondance de variables globales
+        (function() {
+            const sbUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+            const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+            const db = window.supabase.createClient(sbUrl, sbKey);
+            
+            let selectedRole = '';
+            const roleConfigs = {
+                'eleve': { title: 'Élève', color: '#0ea5e9' },
+                'professeur': { title: 'Enseignant', color: '#f59e0b' },
+                'direction': { title: 'Direction', color: '#8b5cf6' }
+            };
 
-        function openForm(roleKey) {
-            selectedRole = roleKey;
-            document.getElementById('role-section').style.display = 'none';
-            document.getElementById('main-header').style.display = 'none';
-            document.getElementById('form-section').classList.add('active');
-            document.getElementById('form-role-title').innerText = 'Connexion ' + roleConfigs[roleKey].title;
-            document.documentElement.style.setProperty('--active-color', roleConfigs[roleKey].color);
-        }
-
-        document.getElementById('btn-eleve').onclick = () => openForm('eleve');
-        document.getElementById('btn-prof').onclick = () => openForm('professeur');
-        document.getElementById('btn-direction').onclick = () => openForm('direction');
-        document.getElementById('btn-back').onclick = () => location.reload();
-
-        document.getElementById('login-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "Connexion..."; btn.disabled = true;
-
-            try {
-                const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value
-                });
-                if (authErr) throw authErr;
-
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', auth.user.id).single();
-                
-                if (profile.role !== selectedRole) {
-                    await supabase.auth.signOut();
-                    alert(`Accès refusé : Votre compte est configuré comme '${profile.role}', pas comme '${selectedRole}'.`);
-                    location.reload();
-                } else {
-                    const pages = { 'eleve': 'dashboard-eleve.html', 'professeur': 'dashboard-prof.html', 'direction': 'dashboard-direction.html' };
-                    location.href = pages[profile.role];
-                }
-            } catch (err) {
-                alert("Erreur : " + err.message);
-                btn.innerText = "Se connecter"; btn.disabled = false;
+            function openForm(roleKey) {
+                selectedRole = roleKey;
+                document.getElementById('role-section').style.display = 'none';
+                document.getElementById('main-header').style.display = 'none';
+                document.getElementById('form-section').classList.add('active');
+                document.getElementById('form-role-title').innerText = 'Connexion ' + roleConfigs[roleKey].title;
+                document.documentElement.style.setProperty('--active-color', roleConfigs[roleKey].color);
             }
-        };
+
+            document.getElementById('btn-eleve').onclick = () => openForm('eleve');
+            document.getElementById('btn-prof').onclick = () => openForm('professeur');
+            document.getElementById('btn-direction').onclick = () => openForm('direction');
+            document.getElementById('btn-back').onclick = () => location.reload();
+
+            document.getElementById('login-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submit-btn');
+                btn.innerText = "Connexion..."; btn.disabled = true;
+
+                try {
+                    const { data: auth, error: authErr } = await db.auth.signInWithPassword({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value
+                    });
+                    if (authErr) throw authErr;
+
+                    const { data: profile } = await db.from('profiles').select('role').eq('id', auth.user.id).single();
+                    
+                    if (profile.role !== selectedRole) {
+                        await db.auth.signOut();
+                        alert(`Accès refusé : Votre compte est configuré comme '${profile.role}', pas comme '${selectedRole}'.`);
+                        location.reload();
+                    } else {
+                        const pages = { 'eleve': 'dashboard-eleve.html', 'professeur': 'dashboard-prof.html', 'direction': 'dashboard-direction.html' };
+                        location.href = pages[profile.role];
+                    }
+                } catch (err) {
+                    alert("Erreur : " + err.message);
+                    btn.innerText = "Se connecter"; btn.disabled = false;
+                }
+            };
+        })();
     </script>
 </body>
 </html>
