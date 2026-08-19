@@ -25,8 +25,7 @@
         .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #64748b; font-weight: 600; }
         .grid-cell { background: #ffffff; position: relative; }
         .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: #8b5cf6; color: white; border-radius: 4px; padding: 3px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; cursor: pointer; }
-        .course-card:hover { background: #7c3aed; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; }
+        .list-item { display: flex; gap: 8px; align-items: center; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -35,11 +34,23 @@
         <button class="btn-action" style="margin-top:auto; background:var(--danger);" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
-        <h1>Administration Globale & Suivi des EDT</h1>
+        <h1>Administration & Gestion</h1>
         <div class="grid">
-            <div class="card"><h2>Comptes & Élèves</h2><button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button><button class="btn-action" style="background:#0ea5e9;" onclick="openModal('modal-affect')">Associer Élève</button></div>
-            <div class="card"><h2>Structure</h2><button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button><button class="btn-action" onclick="openModal('modal-subject')">Gérer les matières</button></div>
-            <div class="card"><h2>Emploi du temps</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau</button></div>
+            <div class="card">
+                <h2>Comptes & Élèves</h2>
+                <button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button>
+                <button class="btn-action" style="background:#0ea5e9;" onclick="openModal('modal-affect')">Associer Élève</button>
+                <button class="btn-action" style="background:#f59e0b;" onclick="openModal('modal-profs')">Gérer les Professeurs</button>
+            </div>
+            <div class="card">
+                <h2>Structure</h2>
+                <button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button>
+                <button class="btn-action" onclick="openModal('modal-subject')">Gérer les matières</button>
+            </div>
+            <div class="card">
+                <h2>Emploi du temps</h2>
+                <button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau</button>
+            </div>
         </div>
 
         <div class="viewer-box">
@@ -66,13 +77,21 @@
         <button class="btn-action">Créer</button>
     </form></div></div>
 
+    <!-- Modale Gestion Professeurs (Modifier nom, prénom, civilité) -->
+    <div class="modal-overlay" id="modal-profs"><div class="modal-content"><h3>Gestion des Professeurs</h3>
+        <div id="profs-list" style="margin-top:15px; max-height:400px; overflow-y:auto;">Chargement...</div>
+        <button class="btn-action" style="margin-top:15px; background:#64748b;" onclick="document.getElementById('modal-profs').classList.remove('active')">Fermer</button>
+    </div></div>
+
     <div class="modal-overlay" id="modal-affect"><div class="modal-content"><h3>Affecter un élève</h3><form id="form-affect"><div class="form-group"><label>Élève</label><select id="affect-eleve"></select></div><div class="form-group"><label>Classe</label><select id="affect-class"></select></div><button class="btn-action">Associer</button></form></div></div>
     
     <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
     
+    <!-- Modale Gestion Matières -->
     <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Gestion des matières</h3>
         <form id="form-subject" style="margin-bottom:20px;"><input type="text" id="subject-name" placeholder="Nouvelle matière" required><button class="btn-action" style="margin-top:10px;">Ajouter</button></form>
         <div id="subjects-list">Chargement...</div>
+        <button class="btn-action" style="margin-top:15px; background:#64748b;" onclick="document.getElementById('modal-subject').classList.remove('active')">Fermer</button>
     </div></div>
     
     <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Créneau Récurrent</h3><form id="form-edt">
@@ -112,6 +131,7 @@
                 document.getElementById(id).classList.add('active');
                 loadDropdowns();
                 if(id === 'modal-subject') loadSubjectsManager();
+                if(id === 'modal-profs') loadProfsManager();
             }
 
             async function loadDropdowns() {
@@ -125,6 +145,63 @@
                 if(classes.data) document.querySelectorAll('#edt-class, #affect-class').forEach(s => s.innerHTML = classes.data.map(c => `<option value="${c.id}">${c.nom}</option>`).join(''));
                 if(subs.data) document.querySelectorAll('#edt-subject').forEach(s => s.innerHTML = subs.data.map(m => `<option value="${m.id}">${m.nom}</option>`).join(''));
                 if(eleves.data) document.getElementById('affect-eleve').innerHTML = eleves.data.map(el => `<option value="${el.id}">${el.prenom} ${el.nom}</option>`).join('');
+            }
+
+            async function loadProfsManager() {
+                const { data } = await supabase.from('profiles').select('id, nom, prenom, civilite').eq('role', 'professeur');
+                const container = document.getElementById('profs-list');
+                if(data) {
+                    container.innerHTML = data.map(p => `
+                        <div class="list-item" style="flex-direction:column; align-items:stretch; gap:6px;">
+                            <div style="display:flex; gap:6px;">
+                                <select id="civ-${p.id}" style="width:70px;">
+                                    <option value="M." ${p.civilite === 'M.' ? 'selected' : ''}>M.</option>
+                                    <option value="Mme" ${p.civilite === 'Mme' ? 'selected' : ''}>Mme</option>
+                                </select>
+                                <input type="text" value="${p.prenom}" id="prenom-${p.id}" placeholder="Prénom">
+                                <input type="text" value="${p.nom}" id="nom-${p.id}" placeholder="Nom">
+                            </div>
+                            <button onclick="updateProf('${p.id}')" style="background:#0ea5e9; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:600;">Enregistrer les modifications</button>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            window.updateProf = async function(id) {
+                const civilite = document.getElementById(`civ-${id}`).value;
+                const prenom = document.getElementById(`prenom-${id}`).value;
+                const nom = document.getElementById(`nom-${id}`).value;
+                const { error } = await supabase.from('profiles').update({ civilite, prenom, nom }).eq('id', id);
+                if(error) alert("Erreur : " + error.message);
+                else { alert("Professeur mis à jour !"); loadProfsManager(); }
+            }
+
+            async function loadSubjectsManager() {
+                const { data } = await supabase.from('matieres').select('id, nom');
+                const container = document.getElementById('subjects-list');
+                if(data) {
+                    container.innerHTML = data.map(m => `
+                        <div class="list-item">
+                            <input type="text" value="${m.nom}" id="sub-input-${m.id}" style="flex:1;">
+                            <button onclick="updateSubject('${m.id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">Modifier</button>
+                            <button onclick="deleteSubject('${m.id}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">Suppr.</button>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            window.updateSubject = async function(id) {
+                const newName = document.getElementById(`sub-input-${id}`).value;
+                const { error } = await supabase.from('matieres').update({ nom: newName }).eq('id', id);
+                if(error) alert("Erreur : " + error.message);
+                else { alert("Matière modifiée avec succès !"); loadSubjectsManager(); }
+            }
+
+            window.deleteSubject = async function(id) {
+                if(confirm("Supprimer cette matière ?")) {
+                    await supabase.from('matieres').delete().eq('id', id);
+                    loadSubjectsManager();
+                }
             }
 
             window.toggleViewSelector = async function() {
@@ -193,34 +270,6 @@
                 if(confirm("Supprimer ce créneau ?")) {
                     await supabase.from('cours_recurrents').delete().eq('id', id);
                     loadSupervisionEDT();
-                }
-            }
-
-            async function loadSubjectsManager() {
-                const { data } = await supabase.from('matieres').select('id, nom');
-                const container = document.getElementById('subjects-list');
-                if(data) {
-                    container.innerHTML = data.map(m => `
-                        <div class="list-item">
-                            <input type="text" value="${m.nom}" id="sub-${m.id}" style="width:60%; padding:5px;">
-                            <button onclick="updateSubject('${m.id}')" style="background:#0ea5e9; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Modifier</button>
-                            <button onclick="deleteSubject('${m.id}')" style="background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Suppr.</button>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            window.updateSubject = async function(id) {
-                const newName = document.getElementById(`sub-${id}`).value;
-                await supabase.from('matieres').update({ nom: newName }).eq('id', id);
-                alert("Matière modifiée !");
-                loadSubjectsManager();
-            }
-
-            window.deleteSubject = async function(id) {
-                if(confirm("Supprimer cette matière ?")) {
-                    await supabase.from('matieres').delete().eq('id', id);
-                    loadSubjectsManager();
                 }
             }
 
