@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENT - Espace Élève</title>
+    <!-- Importation de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --primary-hover: #4338ca;
+            --bg: #f3f4f6;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .logo-area {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .nav-link {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            padding: 0.75rem 1rem;
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            background-color: var(--surface);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(5, 1fr);
+            gap: 1rem;
+            background-color: var(--surface);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .day-header {
+            font-weight: bold;
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-light);
+        }
+
+        .time-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 1rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            text-align: right;
+            padding-right: 0.5rem;
+        }
+
+        .course-card {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .course-card.cancelled {
+            background-color: #f3f4f6;
+            border-left-color: var(--text-light);
+            text-decoration: line-through;
+            color: var(--text-light);
+            opacity: 0.7;
+        }
+
+        .course-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .cancelled .course-title {
+            color: var(--text-light);
+        }
+
+        .course-info {
+            font-size: 0.85rem;
+            margin: 0;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo-area">Mon ENT</div>
+        <a class="nav-link active">📅 Emploi du temps</a>
+        <a class="nav-link">📝 Travail à faire</a>
+        <a class="nav-link">💬 Messagerie</a>
+        <a class="nav-link">❌ Absences</a>
+        
+        <button class="logout-btn" onclick="handleLogout()">Se déconnecter</button>
+    </nav>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 id="welcome-message">Mon Emploi du temps</h1>
+            <div class="user-info" id="user-name">Chargement...</div>
+        </header>
+
+        <div class="schedule-grid">
+            <div></div>
+            <div class="day-header">Lundi</div>
+            <div class="day-header">Mardi</div>
+            <div class="day-header">Mercredi</div>
+            <div class="day-header">Jeudi</div>
+            <div class="day-header">Vendredi</div>
+
+            <div class="time-col">
+                <span>08:00</span>
+                <span>09:00</span>
+                <span>10:00</span>
+                <span>11:00</span>
+            </div>
+
+            <div>
+                <div class="course-card">
+                    <p class="course-title">Mathématiques</p>
+                    <p class="course-info">M. Chassaigne - Salle 12</p>
+                    <p class="course-info">08:00 - 10:00</p>
+                </div>
+                <div class="course-card cancelled">
+                    <p class="course-title">Histoire-Géo</p>
+                    <p class="course-info">M. Lequint (Absent)</p>
+                    <p class="course-info">10:00 - 11:00</p>
+                </div>
+            </div>
+
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialisation de Supabase avec tes vraies clés
+        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function checkSession() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            fetchUserProfile(session.user.id);
+        }
+
+        async function fetchUserProfile(userId) {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('nom, prenom, role')
+                .eq('id', userId)
+                .single();
+
+            if (error) {
+                console.error("Erreur lors de la récupération du profil :", error);
+                return;
+            }
+
+            if (data.role !== 'eleve') {
+                alert("Accès non autorisé.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('user-name').innerText = `${data.prenom} ${data.nom} (Élève)`;
+        }
+
+        async function handleLogout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                alert("Erreur lors de la déconnexion.");
+                console.error(error);
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        checkSession();
+    </script>
+</body>
+</html>
