@@ -341,24 +341,16 @@
                     }
 
                     // 3. Vérification de la cohérence du Rôle
-                    const roleDb = profileData.role.toLowerCase();
-                    const roleChoisi = selectedRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                  const roleDb = profileData.role.toLowerCase(); // Ex: 'professeur'
+// Si tu cliques sur le bouton "Enseignant", on le convertit en 'professeur' pour que ça corresponde à la BDD :
+let roleChoisi = currentRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+if (roleChoisi === 'enseignant') roleChoisi = 'professeur';
 
-                    if (roleDb !== roleChoisi) {
-                        throw new Error(`Accès refusé : Ce compte est configuré comme '${roleDb}', pas comme ${selectedRole}.`);
-                    }
-
-                    // 4. Succès -> Redirection
-                    if (roleDb === 'eleve') window.location.href = 'dashboard-eleve.html';
-                    else if (roleDb === 'professeur') window.location.href = 'dashboard-prof.html';
-                    else if (roleDb === 'direction') window.location.href = 'dashboard-direction.html';
-
-                } catch (error) {
-                    alert(error.message); // Affiche l'erreur exacte pour t'aider à débugger
-                    await supabase.auth.signOut(); // Nettoie la session en cas d'erreur
-                } finally {
-                    submitBtn.innerText = "Se connecter";
-                    submitBtn.disabled = false;
+if (roleDb !== roleChoisi) {
+    alert(`Accès refusé : Ce compte est configuré comme '${roleDb}'.`);
+    await supabase.auth.signOut();
+    return;
+}
                 }
             });
         });
