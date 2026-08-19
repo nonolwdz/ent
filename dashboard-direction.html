@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENT - Direction</title>
+    <title>ENT - Direction (Lycée Paul de Staël)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
-            --border-color: #e2e8f0; --primary: #8b5cf6; --primary-hover: #7c3aed; --danger: #ef4444;
+            --border-color: #e2e8f0; --primary: #8b5cf6; --primary-hover: #7c3aed; --danger: #ef4444; --warning: #f59e0b;
         }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
         /* Sidebar & Layout */
         .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .logo { font-size: 18px; font-weight: 700; margin-bottom: 40px; color: var(--primary); }
-        .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
-        .nav-link:hover, .nav-link.active { background-color: #f3e8ff; color: var(--primary); }
         .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: var(--danger); color: white; }
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
@@ -35,18 +33,7 @@
         .btn-action:hover { background: var(--primary-hover); }
         .btn-secondary { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-secondary:hover { background: var(--border-color); }
-        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: white; }
-
-        /* Listes dynamiques */
-        .dynamic-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
-        .dynamic-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border-color); font-size: 14px; font-weight: 500; }
-        .dynamic-list li:last-child { border-bottom: none; }
-        .empty-msg { padding: 15px; text-align: center; color: var(--text-muted); font-size: 13px; }
-        
-        .action-links span { font-size: 12px; cursor: pointer; margin-left: 10px; font-weight: 600; }
-        .edit-link { color: var(--primary); }
-        .delete-link { color: var(--danger); }
+        .btn-warning { background: var(--warning); color: white; border: none; }
 
         /* Modales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
@@ -58,199 +45,170 @@
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; box-sizing: border-box; outline: none; }
-        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
         <div class="logo">Lycée Paul de Staël</div>
-        <a class="nav-link active">Tableau de bord</a>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
     <main class="main-content">
         <header class="header">
-            <h1>Espace Direction</h1>
+            <h1>Administration Globale</h1>
             <div class="user-badge" id="user-name">Chargement...</div>
         </header>
 
         <div class="grid">
-            <!-- 1. Gestion des Classes -->
-            <div class="card" style="grid-column: span 2;">
-                <h2>Structure : Gestion des Classes</h2>
-                <ul class="dynamic-list" id="class-list">
-                    <div class="empty-msg">Chargement des classes...</div>
-                </ul>
-                <button class="btn-action" style="margin-top: 10px;" onclick="openModal('modal-create-class')">Créer une nouvelle classe</button>
-            </div>
-
-            <!-- 2. Autres actions -->
+            <!-- Gestion Structure -->
             <div class="card">
-                <h2>Ressources</h2>
-                <p>Comptes utilisateurs et matières.</p>
-                <button class="btn-action btn-secondary" onclick="openModal('modal-account')">Créer un compte</button>
-                <button class="btn-action btn-secondary" onclick="openModal('modal-subject')">Créer une matière</button>
+                <h2>1. Structure & Comptes</h2>
+                <p>Création des profils, classes et matières.</p>
+                <button class="btn-action" id="btn-open-account">Créer un compte</button>
+                <button class="btn-action btn-secondary" id="btn-open-class">Créer une classe</button>
+                <button class="btn-action btn-secondary" id="btn-open-subject">Créer une matière</button>
             </div>
             
+            <!-- Emplois du temps -->
             <div class="card">
-                <h2>Emploi du Temps</h2>
-                <p>Planification des cours (En développement).</p>
-                <button class="btn-action" onclick="alert('Bientôt disponible : Création de la grille des cours.')">Configurer un EDT</button>
+                <h2>2. Emplois du temps</h2>
+                <p>Lier une classe, un professeur et une matière.</p>
+                <button class="btn-action" id="btn-open-edt">Planifier un cours</button>
+                <button class="btn-action btn-secondary" onclick="alert('La messagerie globale sera bientôt déployée.')">Messagerie globale</button>
+            </div>
+
+            <!-- Absences -->
+            <div class="card">
+                <h2>3. Gestion des Absences</h2>
+                <p>Déclarer un professeur absent pour griser ses cours.</p>
+                <button class="btn-action btn-warning" id="btn-open-absence">Déclarer un prof absent</button>
             </div>
         </div>
     </main>
 
-    <!-- Modale : Éditer une classe -->
-    <div class="modal-overlay" id="modal-edit-class">
+    <!-- Modale : Planifier un cours -->
+    <div class="modal-overlay" id="modal-edt">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Modifier la classe</h3>
-                <button class="close-btn" onclick="closeModal('modal-edit-class')">&times;</button>
-            </div>
-            
-            <div class="form-group">
-                <label>Nom de la classe</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="edit-class-name">
-                    <button class="btn-action" style="width: auto;" onclick="updateClassName()">Renommer</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Élèves inscrits</label>
-                <ul class="dynamic-list" id="edit-class-students" style="max-height: 150px; margin-bottom: 10px;"></ul>
-                
-                <label style="margin-top: 15px;">Ajouter un élève existant</label>
-                <div style="display: flex; gap: 10px;">
-                    <select id="select-add-student"><option value="">Sélectionner...</option></select>
-                    <button class="btn-action" style="width: auto;" onclick="addStudentToClass()">Ajouter</button>
-                </div>
-            </div>
-            
-            <button class="btn-action btn-danger" style="margin-top: 20px;" onclick="deleteClass()">Supprimer définitivement la classe</button>
+            <div class="modal-header"><h3>Planifier un cours</h3><button class="close-btn" id="btn-close-edt">&times;</button></div>
+            <form id="form-edt">
+                <div class="form-group"><label>Classe</label><select id="edt-class" required></select></div>
+                <div class="form-group"><label>Professeur</label><select id="edt-prof" required></select></div>
+                <div class="form-group"><label>Matière</label><select id="edt-subject" required></select></div>
+                <div class="form-group"><label>Date et Heure de début</label><input type="datetime-local" id="edt-start" required></div>
+                <div class="form-group"><label>Date et Heure de fin</label><input type="datetime-local" id="edt-end" required></div>
+                <button type="submit" class="btn-action">Créer le cours</button>
+            </form>
         </div>
     </div>
 
-    <!-- Modales basiques (Créations) -->
-    <div class="modal-overlay" id="modal-create-class">
+    <!-- Modale : Déclarer Absence -->
+    <div class="modal-overlay" id="modal-absence">
         <div class="modal-content">
-            <div class="modal-header"><h3>Nouvelle Classe</h3><button class="close-btn" onclick="closeModal('modal-create-class')">&times;</button></div>
-            <form onsubmit="createClass(event)"><input type="text" id="new-class-name" class="form-group" style="width: 100%; padding: 10px; margin-bottom: 15px;" required placeholder="Ex: Seconde 1"><button type="submit" class="btn-action">Créer</button></form>
+            <div class="modal-header"><h3>Absence Professeur</h3><button class="close-btn" id="btn-close-absence">&times;</button></div>
+            <form id="form-absence">
+                <div class="form-group"><label>Professeur absent</label><select id="abs-prof" required></select></div>
+                <div class="form-group"><label>Du (Date et Heure)</label><input type="datetime-local" id="abs-start" required></div>
+                <div class="form-group"><label>Au (Date et Heure)</label><input type="datetime-local" id="abs-end" required></div>
+                <button type="submit" class="btn-action btn-warning">Griser et annuler ses cours</button>
+            </form>
         </div>
     </div>
 
-    <!-- ... (Modales Créer Compte et Matière identiques aux versions précédentes, masquées ici pour concision du frontend) ... -->
+    <!-- Les autres modales (Compte, Classe, Matière) sont gardées minimalistes pour le fonctionnement -->
+    <div class="modal-overlay" id="modal-account"><div class="modal-content"><div class="modal-header"><h3>Nouveau compte</h3><button class="close-btn" id="btn-close-account">&times;</button></div><form id="form-account"><div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div><div class="form-group"><label>Prénom</label><input type="text" id="acc-prenom" required></div><div class="form-group"><label>Nom</label><input type="text" id="acc-nom" required></div><div class="form-group"><label>Email</label><input type="email" id="acc-email" required></div><div class="form-group"><label>Mot de passe</label><input type="password" id="acc-pwd" required></div><button type="submit" class="btn-action">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-class"><div class="modal-content"><div class="modal-header"><h3>Nouvelle classe</h3><button class="close-btn" id="btn-close-class">&times;</button></div><form id="form-class"><div class="form-group"><label>Nom</label><input type="text" id="class-name" required></div><button type="submit" class="btn-action">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><div class="modal-header"><h3>Nouvelle matière</h3><button class="close-btn" id="btn-close-subject">&times;</button></div><form id="form-subject"><div class="form-group"><label>Nom</label><input type="text" id="subject-name" required></div><button type="submit" class="btn-action">Créer</button></form></div></div>
 
     <script>
-        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        document.addEventListener('DOMContentLoaded', () => {
+            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            const secondarySupabase = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
 
-        let currentEditingClassId = null;
+            async function init() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return window.location.href = 'index.html';
+                const { data } = await supabase.from('profiles').select('nom, prenom, role').eq('id', session.user.id).single();
+                if (data.role !== 'direction') return window.location.href = 'index.html';
+                document.getElementById('user-name').innerText = `${data.prenom} ${data.nom}`;
+                loadDropdowns();
+            }
+            init();
 
-        // UI & Init
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); currentEditingClassId = null; }
-
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return window.location.href = 'index.html';
-            const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-            if (data.role !== 'direction') return window.location.href = 'index.html';
-            document.getElementById('user-name').innerText = `${data.prenom} ${data.nom}`;
-            loadClasses();
-        }
-        init();
-
-        // 1. Charger et afficher les classes
-        async function loadClasses() {
-            const { data: classes } = await supabase.from('classes').select('*').order('nom');
-            const list = document.getElementById('class-list');
-            if (!classes || classes.length === 0) { list.innerHTML = `<div class="empty-msg">Aucune classe configurée.</div>`; return; }
+            // Utilities pour les modales
+            function toggleModal(id, show) { document.getElementById(id).classList[show ? 'add' : 'remove']('active'); }
             
-            list.innerHTML = classes.map(c => `
-                <li>
-                    ${c.nom}
-                    <div class="action-links">
-                        <span class="edit-link" onclick="openClassEditor('${c.id}', '${c.nom}')">Modifier & Gérer les élèves</span>
-                    </div>
-                </li>
-            `).join('');
-        }
+            // Attacher les events d'ouverture/fermeture
+            const modals = ['account', 'class', 'subject', 'edt', 'absence'];
+            modals.forEach(m => {
+                document.getElementById(`btn-open-${m}`).addEventListener('click', () => toggleModal(`modal-${m}`, true));
+                document.getElementById(`btn-close-${m}`).addEventListener('click', () => toggleModal(`modal-${m}`, false));
+            });
 
-        // 2. Créer une classe
-        async function createClass(e) {
-            e.preventDefault();
-            const nom = document.getElementById('new-class-name').value;
-            await supabase.from('classes').insert([{ nom }]);
-            closeModal('modal-create-class');
-            loadClasses();
-        }
+            // Chargement des listes déroulantes
+            async function loadDropdowns() {
+                const { data: profs } = await supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur');
+                const { data: classes } = await supabase.from('classes').select('id, nom');
+                const { data: subjects } = await supabase.from('matieres').select('id, nom');
 
-        // 3. Éditeur de classe complexe
-        async function openClassEditor(id, nom) {
-            currentEditingClassId = id;
-            document.getElementById('edit-class-name').value = nom;
-            openModal('modal-edit-class');
-            refreshClassStudents();
-            loadAvailableStudents();
-        }
+                const profOptions = profs ? profs.map(p => `<option value="${p.id}">${p.prenom} ${p.nom}</option>`).join('') : '';
+                document.getElementById('edt-prof').innerHTML = profOptions;
+                document.getElementById('abs-prof').innerHTML = profOptions;
+                
+                if(classes) document.getElementById('edt-class').innerHTML = classes.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+                if(subjects) document.getElementById('edt-subject').innerHTML = subjects.map(s => `<option value="${s.id}">${s.nom}</option>`).join('');
+            }
 
-        async function updateClassName() {
-            const newName = document.getElementById('edit-class-name').value;
-            await supabase.from('classes').update({ nom: newName }).eq('id', currentEditingClassId);
-            loadClasses();
-            alert("Nom mis à jour !");
-        }
+            // Soumission : Compte
+            document.getElementById('form-account').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { data: authData, error: authError } = await secondarySupabase.auth.signUp({
+                    email: document.getElementById('acc-email').value,
+                    password: document.getElementById('acc-pwd').value
+                });
+                if (authError) return alert(authError.message);
+                await supabase.from('profiles').insert([{ id: authData.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value }]);
+                alert("Compte créé !"); toggleModal('modal-account', false); e.target.reset(); loadDropdowns();
+            });
 
-        async function deleteClass() {
-            if(!confirm("Supprimer cette classe ? Les élèves se retrouveront sans classe.")) return;
-            
-            // On retire d'abord les élèves de cette classe pour éviter les erreurs de base de données
-            await supabase.from('profiles').update({ classe_id: null }).eq('classe_id', currentEditingClassId);
-            // Puis on supprime la classe
-            await supabase.from('classes').delete().eq('id', currentEditingClassId);
-            
-            closeModal('modal-edit-class');
-            loadClasses();
-        }
+            // Soumission : Classe & Matière
+            document.getElementById('form-class').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('classes').insert([{ nom: document.getElementById('class-name').value }]); alert("Classe créée !"); toggleModal('modal-class', false); loadDropdowns(); });
+            document.getElementById('form-subject').addEventListener('submit', async (e) => { e.preventDefault(); await supabase.from('matieres').insert([{ nom: document.getElementById('subject-name').value }]); alert("Matière créée !"); toggleModal('modal-subject', false); loadDropdowns(); });
 
-        // 4. Gestion des élèves dans la classe
-        async function refreshClassStudents() {
-            const { data: students } = await supabase.from('profiles').select('id, nom, prenom').eq('classe_id', currentEditingClassId).order('nom');
-            const list = document.getElementById('edit-class-students');
-            
-            if (!students || students.length === 0) { list.innerHTML = `<div class="empty-msg">Aucun élève.</div>`; return; }
-            
-            list.innerHTML = students.map(s => `
-                <li>${s.prenom} ${s.nom} <span class="delete-link" style="font-size: 11px; cursor: pointer;" onclick="removeStudent('${s.id}')">Retirer</span></li>
-            `).join('');
-        }
+            // Soumission : Créer un cours
+            document.getElementById('form-edt').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { error } = await supabase.from('cours').insert([{
+                    classe_id: document.getElementById('edt-class').value,
+                    prof_id: document.getElementById('edt-prof').value,
+                    matiere_id: document.getElementById('edt-subject').value,
+                    heure_debut: new Date(document.getElementById('edt-start').value).toISOString(),
+                    heure_fin: new Date(document.getElementById('edt-end').value).toISOString(),
+                    statut: 'maintenu'
+                }]);
+                if(error) alert("Erreur : " + error.message); else { alert("Cours planifié avec succès !"); toggleModal('modal-edt', false); e.target.reset(); }
+            });
 
-        async function loadAvailableStudents() {
-            // Charge les élèves qui n'ont pas encore de classe ou qui sont dans une autre
-            const { data: students } = await supabase.from('profiles').select('id, nom, prenom').eq('role', 'eleve').is('classe_id', null).order('nom');
-            const select = document.getElementById('select-add-student');
-            select.innerHTML = `<option value="">Sélectionner un élève sans classe...</option>` + 
-                               students.map(s => `<option value="${s.id}">${s.prenom} ${s.nom}</option>`).join('');
-        }
+            // Soumission : Déclarer Absence
+            document.getElementById('form-absence').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const profId = document.getElementById('abs-prof').value;
+                const start = new Date(document.getElementById('abs-start').value).toISOString();
+                const end = new Date(document.getElementById('abs-end').value).toISOString();
+                
+                const { error } = await supabase.from('cours')
+                    .update({ statut: 'annule', motif: 'Professeur absent' })
+                    .eq('prof_id', profId)
+                    .gte('heure_debut', start)
+                    .lte('heure_fin', end);
+                
+                if(error) alert("Erreur : " + error.message); else { alert("Absence déclarée. Les cours sont grisés !"); toggleModal('modal-absence', false); }
+            });
 
-        async function addStudentToClass() {
-            const studentId = document.getElementById('select-add-student').value;
-            if(!studentId) return;
-            await supabase.from('profiles').update({ classe_id: currentEditingClassId }).eq('id', studentId);
-            refreshClassStudents();
-            loadAvailableStudents();
-        }
-
-        async function removeStudent(studentId) {
-            await supabase.from('profiles').update({ classe_id: null }).eq('id', studentId);
-            refreshClassStudents();
-            loadAvailableStudents();
-        }
-
-        document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
+            document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
+        });
     </script>
 </body>
 </html>
