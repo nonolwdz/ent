@@ -23,11 +23,13 @@
         
         .viewer-box { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .schedule-container { overflow: hidden; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px; }
+        /* Hauteur fixe de 65px par ligne pour garantir une mise en page homogène et professionnelle */
         .schedule-grid { display: grid; grid-template-columns: 90px repeat(5, minmax(140px, 1fr)); grid-template-rows: 50px repeat(9, 65px); background-color: #e2e8f0; gap: 1px; }
         .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #475569; }
         .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; border-right: 1px solid #e2e8f0; }
         .grid-cell { background: #ffffff; position: relative; }
-        .course-card { position: absolute; top: 3px; bottom: 3px; left: 3px; right: 3px; background: #8b5cf6; color: white; border-radius: 8px; padding: 4px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; cursor: pointer; }
+        .course-card { position: absolute; top: 3px; bottom: 3px; left: 3px; right: 3px; background: #8b5cf6; color: white; border-radius: 8px; padding: 6px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(139, 92, 246, 0.2); }
+        .course-card.absent { background: #ef4444 !important; opacity: 0.85; text-decoration: line-through; }
         .list-item { display: flex; gap: 8px; align-items: center; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; }
     </style>
 </head>
@@ -57,7 +59,7 @@
         </div>
 
         <div class="viewer-box">
-            <h3>Supervision des Emplois du Temps</h3>
+            <h3>Supervision des Emplois du Temps (Gestion interactive)</h3>
             <div style="display:flex; gap:15px; margin-bottom:15px;">
                 <select id="view-type" onchange="toggleViewSelector()" style="width:200px;">
                     <option value="classe">Par Classe</option>
@@ -82,7 +84,7 @@
         <button class="btn-action">Créer</button>
     </form></div></div>
 
-    <div class="modal-overlay" id="modal-profs"><div class="modal-content"><h3>Gestion des Professeurs</h3>
+    <div class="modal-overlay" id="modal-profs"><div class="modal-content"><h3>Gestion des Professeurs & Absences</h3>
         <div id="profs-list" style="margin-top:15px; max-height:400px; overflow-y:auto;">Chargement...</div>
         <button class="btn-action" style="margin-top:15px; background:#64748b;" onclick="document.getElementById('modal-profs').classList.remove('active')">Fermer</button>
     </div></div>
@@ -151,11 +153,11 @@
             }
 
             async function loadProfsManager() {
-                const { data } = await supabase.from('profiles').select('id, nom, prenom, civilite').eq('role', 'professeur');
+                const { data } = await supabase.from('profiles').select('id, nom, prenom, civilite, absent').eq('role', 'professeur');
                 const container = document.getElementById('profs-list');
                 if(data) {
                     container.innerHTML = data.map(p => `
-                        <div class="list-item" style="flex-direction:column; align-items:stretch; gap:6px;">
+                        <div class="list-item" style="flex-direction:column; align-items:stretch; gap:6px; margin-bottom: 12px; border-left: 4px solid ${p.absent ? '#ef4444' : '#10b981'};">
                             <div style="display:flex; gap:6px;">
                                 <select id="civ-${p.id}" style="width:70px;">
                                     <option value="M." ${p.civilite === 'M.' ? 'selected' : ''}>M.</option>
@@ -164,7 +166,10 @@
                                 <input type="text" value="${p.prenom}" id="prenom-${p.id}">
                                 <input type="text" value="${p.nom}" id="nom-${p.id}">
                             </div>
-                            <button onclick="updateProf('${p.id}')" style="background:#0ea5e9; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:600;">Enregistrer</button>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label style="font-size:12px; cursor:pointer;"><input type="checkbox" id="abs-${p.id}" ${p.absent ? 'checked' : ''}> Marquer comme absent</label>
+                                <button onclick="updateProf('${p.id}')" style="background:#0ea5e9; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600;">Enregistrer</button>
+                            </div>
                         </div>
                     `).join('');
                 }
@@ -174,8 +179,9 @@
                 const civilite = document.getElementById(`civ-${id}`).value;
                 const prenom = document.getElementById(`prenom-${id}`).value;
                 const nom = document.getElementById(`nom-${id}`).value;
-                await supabase.from('profiles').update({ civilite, prenom, nom }).eq('id', id);
-                alert("Professeur mis à jour !"); loadProfsManager();
+                const absent = document.getElementById(`abs-${id}`).checked;
+                await supabase.from('profiles').update({ civilite, prenom, nom, absent }).eq('id', id);
+                alert("Professeur mis à jour !"); loadProfsManager(); loadSupervisionEDT();
             }
 
             async function loadSubjectsManager() {
@@ -238,7 +244,7 @@
 
                 if(!targetId) return;
 
-                let query = supabase.from('cours_recurrents').select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), classes(nom), profiles(nom, prenom, civilite)');
+                let query = supabase.from('cours_recurrents').select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), classes(nom), profiles(nom, prenom, civilite, absent)');
                 if(type === 'classe') query = query.eq('classe_id', targetId);
                 else query = query.eq('prof_id', targetId);
 
@@ -256,10 +262,12 @@
                         const span = (endSlot.row - startSlot.row) + 1;
                         if (span > 1) cell.style.gridRowEnd = `span ${span}`;
 
+                        const isAbsent = c.profiles?.absent;
                         cell.innerHTML = `
-                            <div class="course-card" onclick="deleteCourse('${c.id}')" title="Supprimer">
+                            <div class="course-card ${isAbsent ? 'absent' : ''}" onclick="manageCourse('${c.id}')" title="Cliquer pour gérer ce cours">
                                 <span style="font-weight:700;">${c.matieres?.nom || ''}</span>
                                 <span style="font-size:9px;">${type === 'classe' ? (c.profiles?.civilite || 'M.') + ' ' + c.profiles?.nom : c.classes?.nom}</span>
+                                ${isAbsent ? '<span style="font-size:8px; background:white; color:red; border-radius:3px; margin-top:2px;">PROF ABSENT</span>' : ''}
                             </div>
                         `;
                         grid.appendChild(cell);
@@ -267,10 +275,21 @@
                 }
             }
 
-            window.deleteCourse = async function(id) {
-                if(confirm("Supprimer ce créneau ?")) {
-                    await supabase.from('cours_recurrents').delete().eq('id', id);
-                    loadSupervisionEDT();
+            window.manageCourse = async function(id) {
+                const action = prompt("Que voulez-vous faire sur ce cours ?\n1 - Supprimer\n2 - Décaler (changer d'horaires)\nTapez 1 ou 2 :");
+                if(action === "1") {
+                    if(confirm("Confirmer la suppression ?")) {
+                        await supabase.from('cours_recurrents').delete().eq('id', id);
+                        loadSupervisionEDT();
+                    }
+                } else if(action === "2") {
+                    const newStart = prompt("Nouvelle heure de début (ex: 08:30, 10:35, 13:05, 16:05) :");
+                    const newEnd = prompt("Nouvelle heure de fin (ex: 09:25, 12:25, 17:55) :");
+                    if(newStart && newEnd) {
+                        await supabase.from('cours_recurrents').update({ heure_debut: newStart, heure_fin: newEnd }).eq('id', id);
+                        alert("Cours décalé avec succès !");
+                        loadSupervisionEDT();
+                    }
                 }
             }
 
