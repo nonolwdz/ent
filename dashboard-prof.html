@@ -6,27 +6,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #f59e0b; --border-color: #e2e8f0; }
+        :root { --bg-body: #f4f6f9; --text-main: #1e293b; --primary: #f59e0b; --border-color: #e2e8f0; }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(140px, 1fr)); grid-template-rows: 40px repeat(9, 50px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
-        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #64748b; font-weight: 600; }
+        .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; box-shadow: 4px 0 24px rgba(0,0,0,0.02); }
+        .main-content { flex: 1; padding: 35px; overflow-y: auto; display: flex; flex-direction: column; }
+        h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: #0f172a; }
+
+        .schedule-container { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03); overflow: hidden; }
+        .schedule-grid { display: grid; grid-template-columns: 90px repeat(5, minmax(160px, 1fr)); grid-template-rows: 50px repeat(9, 65px); background-color: var(--border-color); gap: 1px; }
+        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; border-right: 1px solid var(--border-color); }
         .grid-cell { background: #ffffff; position: relative; }
-        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: var(--primary); color: white; border-radius: 6px; padding: 4px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; }
-        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid #ef4444; color: #ef4444; background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
+
+        .course-card { 
+            position: absolute; top: 4px; bottom: 4px; left: 4px; right: 4px; 
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+            color: white; border-radius: 10px; padding: 8px 10px; 
+            display: flex; flex-direction: column; justify-content: center; 
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+        .course-title { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+        .course-class { font-weight: 400; font-size: 10px; opacity: 0.9; }
+
+        .logout-btn { margin-top: auto; padding: 12px; border: none; background: #fee2e2; color: #ef4444; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .logout-btn:hover { background: #fecaca; }
     </style>
 </head>
 <body>
     <nav class="sidebar">
         <div style="font-size:18px; font-weight:700; color:var(--primary); margin-bottom:10px;">Lycée Paul de Staël</div>
-        <div id="prof-name" style="font-size: 14px; font-weight: 600; margin-bottom: 40px; color: #64748b;">Chargement...</div>
+        <div id="prof-name" style="font-size: 13px; color: #64748b; margin-bottom: 40px;">Chargement...</div>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
         <h1>Mon Emploi du Temps Professeur</h1>
-        <div class="schedule-grid" id="schedule-grid"></div>
+        <div class="schedule-container">
+            <div class="schedule-grid" id="schedule-grid"></div>
+        </div>
     </main>
     <script>
         (function() {
@@ -51,7 +67,7 @@
                 const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
                 if (!profile) return;
 
-                document.getElementById('prof-name').innerText = `${profile.civilite || 'M.'} ${profile.prenom} ${profile.nom}`;
+                document.getElementById('prof-name').innerHTML = `<b>${profile.civilite || 'M.'} ${profile.prenom} ${profile.nom}</b><br>Enseignant`;
 
                 buildGridHeaders();
                 loadProfEDT(session.user.id);
@@ -60,7 +76,7 @@
             function buildGridHeaders() {
                 const grid = document.getElementById('schedule-grid');
                 let html = `
-                    <div class="grid-header" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="grid-header" style="grid-column: 1; grid-row: 1;">Horaires</div>
                     <div class="grid-header" style="grid-column: 2; grid-row: 1;">Lundi</div>
                     <div class="grid-header" style="grid-column: 3; grid-row: 1;">Mardi</div>
                     <div class="grid-header" style="grid-column: 4; grid-row: 1;">Mercredi</div>
@@ -68,7 +84,7 @@
                     <div class="grid-header" style="grid-column: 6; grid-row: 1;">Vendredi</div>
                 `;
                 slots.forEach(s => {
-                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
+                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start}<br><span style="font-size:9px; opacity:0.7;">${s.end}</span></div>`;
                 });
                 grid.innerHTML = html;
             }
@@ -95,8 +111,8 @@
 
                         cell.innerHTML = `
                             <div class="course-card">
-                                <span>${c.matieres?.nom || 'Matière'}</span>
-                                <span style="font-weight:normal; font-size:10px;">Classe : ${c.classes?.nom || ''}</span>
+                                <span class="course-title">${c.matieres?.nom || 'Matière'}</span>
+                                <span class="course-class">Classe : ${c.classes?.nom || ''}</span>
                             </div>
                         `;
                         grid.appendChild(cell);
