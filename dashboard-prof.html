@@ -2,229 +2,85 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENT - Professeur (Lycée Paul de Staël)</title>
+    <title>ENT - Enseignant (Lycée Paul de Staël)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
-            --border-color: #e2e8f0; --primary: #f59e0b; /* Ambre Prof */ --primary-hover: #d97706; --danger: #ef4444;
-        }
+        :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #f59e0b; --border-color: #e2e8f0; }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-        
-        .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
-        .logo { font-size: 18px; font-weight: 700; margin-bottom: 40px; color: var(--text-main); }
-        .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
-        .nav-link:hover, .nav-link.active { background-color: #fef3c7; color: var(--primary); }
-        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
-        .logout-btn:hover { background: var(--danger); color: white; }
-        
+        .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { margin: 0; font-size: 24px; font-weight: 700; }
-        .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
-
-        /* Grille EDT */
-        .schedule-container { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; padding: 20px; }
-        .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(180px, 1fr)); grid-template-rows: 40px repeat(9, 70px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); position: relative; }
-        .grid-header { background-color: #f8fafc; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .time-label { background-color: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 500; display: flex; align-items: flex-start; justify-content: flex-end; padding: 5px 8px 0 0; }
-        
-        .grid-cell { background-color: #ffffff; position: relative; }
-        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; cursor: pointer; }
-        .course-card:hover { transform: scale(1.02); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .course-header { background-color: var(--primary); padding: 4px; font-size: 12px; font-weight: 700; color: white; text-align: center; }
-        .course-body { background-color: #fef3c7; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4px; font-size: 11px; text-align: center; font-weight: 500; color: #78350f; }
-        .course-card.annule { opacity: 0.6; pointer-events: none; }
-        .course-card.annule .course-header { background-color: #64748b; text-decoration: line-through; }
-        .course-card.annule .course-body { background-color: #f1f5f9; color: #64748b; }
-
-        /* Modale */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background: white; width: 100%; max-width: 600px; padding: 32px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .modal-header h3 { margin: 0; font-size: 18px; }
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
-        
-        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-action:hover { background: var(--primary-hover); }
-
-        .student-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; }
-        .radio-group label { margin-left: 10px; font-size: 13px; cursor: pointer; }
-        .form-group { margin-top: 20px; }
-        .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Inter'; box-sizing: border-box; }
+        .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(150px, 1fr)); grid-template-rows: 40px repeat(9, 60px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
+        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .time-label { background: #f8fafc; font-size: 12px; display: flex; align-items: flex-start; justify-content: flex-end; padding-right: 5px; color: #64748b; }
+        .grid-cell { background: #ffffff; position: relative; }
+        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: var(--primary); color: white; border-radius: 6px; padding: 5px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; }
+        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid #ef4444; color: #ef4444; background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <nav class="sidebar">
-        <div class="logo">Lycée Paul de Staël</div>
-        <a class="nav-link active">📅 Mon Emploi du temps</a>
-        <a class="nav-link" onclick="alert('Module messagerie en cours de liaison')">💬 Messagerie</a>
+        <div style="font-size:18px; font-weight:700; color:var(--primary); margin-bottom:40px;">Lycée Paul de Staël (Prof)</div>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
-
     <main class="main-content">
-        <header class="header">
-            <h1>Espace Enseignant</h1>
-            <div class="user-badge" id="user-name">Chargement...</div>
-        </header>
-
-        <div class="schedule-container">
-            <div class="schedule-grid" id="schedule-grid">
-                <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
-                <!-- Heures injectées en JS -->
-            </div>
+        <h1>Mon Emploi du Temps Professeur</h1>
+        <div class="schedule-grid" id="schedule-grid">
+            <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
         </div>
     </main>
-
-    <!-- Modale Action Cours (Appel & Devoirs) -->
-    <div class="modal-overlay" id="modal-cours">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-cours-title">Gestion de la séance</h3>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            
-            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid var(--border-color);">
-                <h4 style="margin-top:0;">📝 Cahier de texte</h4>
-                <textarea id="devoir-contenu" rows="3" placeholder="Travail à faire pour la prochaine séance..."></textarea>
-                <input type="date" id="devoir-date" style="margin-top: 10px; padding: 5px;">
-                <button class="btn-action" style="margin-top: 10px;" onclick="saveDevoir()">Publier le devoir</button>
-            </div>
-
-            <h4 style="margin-top:0;">📋 Faire l'appel</h4>
-            <div id="appel-list">Chargement des élèves...</div>
-            <button class="btn-action" style="margin-top: 20px; width: 100%;" onclick="saveAppel()">Valider l'appel</button>
-        </div>
-    </div>
-
     <script>
-        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        
-        let currentUser = null;
-        let activeCoursId = null;
-        let activeClasseId = null;
+        (function() {
+            const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
+            
+            async function init() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return location.href = 'index.html';
 
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return window.location.href = 'index.html';
-            
-            const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-            if (data.role !== 'professeur') return window.location.href = 'index.html';
-            
-            currentUser = data;
-            document.getElementById('user-name').innerText = `M. ${data.nom}`;
-            
-            buildGridHeaders();
-            fetchSchedule();
-        }
-        init();
-
-        function buildGridHeaders() {
-            const grid = document.getElementById('schedule-grid');
-            for(let i = 8; i <= 16; i++) {
-                grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
+                buildGridHeaders();
+                loadProfEDT(session.user.id);
             }
-        }
 
-        async function fetchSchedule() {
-            const { data: cours } = await supabase
-                .from('cours')
-                .select('id, heure_debut, heure_fin, statut, classe_id, matieres(nom), classes(nom)')
-                .eq('prof_id', currentUser.id);
-            
-            const grid = document.getElementById('schedule-grid');
-            
-            if(cours) cours.forEach(c => {
-                const dateDebut = new Date(c.heure_debut);
-                const dayOfWeek = dateDebut.getDay();
-                if (dayOfWeek < 1 || dayOfWeek > 5) return;
-                
-                const startHour = dateDebut.getHours();
-                const duration = new Date(c.heure_fin).getHours() - startHour;
-                
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.style.gridColumn = dayOfWeek + 1;
-                cell.style.gridRowStart = startHour - 6;
-                if(duration > 1) cell.style.gridRowEnd = `span ${duration}`;
+            function buildGridHeaders() {
+                const grid = document.getElementById('schedule-grid');
+                for(let i = 8; i <= 16; i++) {
+                    grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
+                }
+            }
 
-                const isAnnule = c.statut === 'annule' ? 'annule' : '';
-                cell.innerHTML = `
-                    <div class="course-card ${isAnnule}" onclick="openCoursModal('${c.id}', '${c.classe_id}', '${c.classes.nom}', '${c.matieres.nom}')">
-                        <div class="course-header">${c.classes.nom}</div>
-                        <div class="course-body">
-                            <span style="font-weight:bold;">${c.matieres.nom}</span>
-                            ${isAnnule ? '<span style="color:red; margin-top:5px;">Annulé</span>' : ''}
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(cell);
-            });
-        }
+            async function loadProfEDT(profId) {
+                const { data: cours } = await supabase
+                    .from('cours_recurrents')
+                    .select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), classes(nom)')
+                    .eq('prof_id', profId);
 
-        async function openCoursModal(coursId, classeId, nomClasse, nomMatiere) {
-            activeCoursId = coursId;
-            activeClasseId = classeId;
-            document.getElementById('modal-cours-title').innerText = `${nomClasse} - ${nomMatiere}`;
-            document.getElementById('modal-cours').classList.add('active');
-            
-            // Charger la liste des élèves pour l'appel
-            const { data: eleves } = await supabase.from('profiles').select('id, nom, prenom').eq('classe_id', classeId).order('nom');
-            const list = document.getElementById('appel-list');
-            
-            if(!eleves || eleves.length === 0) { list.innerHTML = "Aucun élève dans cette classe."; return; }
-            
-            list.innerHTML = eleves.map(e => `
-                <div class="student-row" data-id="${e.id}">
-                    <span>${e.nom} ${e.prenom}</span>
-                    <div class="radio-group">
-                        <label><input type="radio" name="statut_${e.id}" value="present" checked> Présent</label>
-                        <label><input type="radio" name="statut_${e.id}" value="retard"> Retard</label>
-                        <label><input type="radio" name="statut_${e.id}" value="absent"> Absent</label>
-                    </div>
-                </div>
-            `).join('');
-        }
+                const grid = document.getElementById('schedule-grid');
+                if(cours) {
+                    cours.forEach(c => {
+                        const startHour = parseInt(c.heure_debut.split(':')[0]);
+                        const endHour = parseInt(c.heure_fin.split(':')[0]);
+                        const duration = endHour - startHour;
 
-        function closeModal() { 
-            document.getElementById('modal-cours').classList.remove('active'); 
-            document.getElementById('devoir-contenu').value = '';
-            document.getElementById('devoir-date').value = '';
-        }
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.style.gridColumn = c.jour_semaine + 1;
+                        cell.style.gridRowStart = startHour - 6;
+                        if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
 
-        async function saveAppel() {
-            const rows = document.querySelectorAll('.student-row');
-            const absences = [];
-            
-            rows.forEach(row => {
-                const eleveId = row.getAttribute('data-id');
-                const statut = document.querySelector(`input[name="statut_${eleveId}"]:checked`).value;
-                absences.push({ cours_id: activeCoursId, eleve_id: eleveId, statut: statut });
-            });
+                        cell.innerHTML = `
+                            <div class="course-card">
+                                <span>${c.matieres ? c.matieres.nom : 'Matière'}</span>
+                                <span style="font-weight:normal; font-size:10px;">Classe : ${c.classes ? c.classes.nom : ''}</span>
+                            </div>
+                        `;
+                        grid.appendChild(cell);
+                    });
+                }
+            }
 
-            const { error } = await supabase.from('absences_eleves').insert(absences);
-            if(error) alert("Erreur : " + error.message);
-            else { alert("Appel enregistré avec succès !"); closeModal(); }
-        }
-
-        async function saveDevoir() {
-            const contenu = document.getElementById('devoir-contenu').value;
-            const dateLimite = document.getElementById('devoir-date').value;
-            
-            if(!contenu || !dateLimite) return alert("Veuillez remplir le devoir et la date.");
-            
-            const { error } = await supabase.from('devoirs').insert([{ cours_id: activeCoursId, contenu: contenu, date_limite: dateLimite }]);
-            if(error) alert("Erreur : " + error.message);
-            else { alert("Devoir publié pour la classe !"); document.getElementById('devoir-contenu').value = ''; }
-        }
-
-        document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
+            document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
+            init();
+        })();
     </script>
 </body>
 </html>
