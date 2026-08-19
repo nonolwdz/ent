@@ -59,17 +59,28 @@
     </main>
 
     <!-- Modales -->
-    <div class="modal-overlay" id="modal-account"><div class="modal-content"><h3>Nouveau compte</h3><form id="form-account"><div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div><input type="text" id="acc-prenom" placeholder="Prénom" required><input type="text" id="acc-nom" placeholder="Nom" required style="margin-top:10px;"><input type="email" id="acc-email" placeholder="Email" required style="margin-top:10px;"><input type="password" id="acc-pwd" placeholder="Mot de passe" required style="margin-top:10px;"><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-account"><div class="modal-content"><h3>Nouveau compte</h3><form id="form-account">
+        <div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div>
+        <div class="form-group"><input type="text" id="acc-prenom" placeholder="Prénom" required></div>
+        <div class="form-group"><input type="text" id="acc-nom" placeholder="Nom" required></div>
+        <div class="form-group"><input type="email" id="acc-email" placeholder="Email" required></div>
+        <div class="form-group"><input type="password" id="acc-pwd" placeholder="Mot de passe (6 caractères min)" required></div>
+        <button class="btn-action">Créer</button>
+    </form></div></div>
+
     <div class="modal-overlay" id="modal-affect"><div class="modal-content"><h3>Affecter un élève</h3><form id="form-affect"><div class="form-group"><label>Élève</label><select id="affect-eleve"></select></div><div class="form-group"><label>Classe</label><select id="affect-class"></select></div><button class="btn-action">Associer</button></form></div></div>
+    
     <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    
     <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    
     <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Créneau Récurrent</h3><form id="form-edt">
         <div class="form-group"><label>Classe</label><select id="edt-class"></select></div>
         <div class="form-group"><label>Professeur</label><select id="edt-prof"></select></div>
         <div class="form-group"><label>Matière</label><select id="edt-subject"></select></div>
         <div class="form-group"><label>Jour</label><select id="edt-jour"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option></select></div>
-        <div class="form-group"><label>Début</label><input type="time" id="edt-start" required></div>
-        <div class="form-group"><label>Fin</label><input type="time" id="edt-end" required></div>
+        <div class="form-group"><label>Début (ex: 08:00)</label><input type="time" id="edt-start" required></div>
+        <div class="form-group"><label>Fin (ex: 10:00)</label><input type="time" id="edt-end" required></div>
         <button class="btn-action">Enregistrer</button>
     </form></div></div>
 
@@ -114,7 +125,6 @@
                 const targetId = document.getElementById('view-target').value;
                 const grid = document.getElementById('sup-grid');
                 
-                // Reset grid labels
                 grid.innerHTML = '<div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>';
                 for(let i = 8; i <= 16; i++) {
                     grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
@@ -159,10 +169,34 @@
 
             document.querySelectorAll('.modal-overlay').forEach(m => m.onclick = (e) => { if(e.target === m) m.classList.remove('active'); });
 
-            document.getElementById('form-account').onsubmit = async(e) => { e.preventDefault(); const {data} = await secondary.auth.signUp({email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value}); await supabase.from('profiles').insert([{id: data.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value}]); alert("Créé !"); location.reload(); };
-            document.getElementById('form-affect').onsubmit = async(e) => { e.preventDefault(); await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value); alert("Associé !"); location.reload(); };
-            document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); location.reload(); };
-            document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); location.reload(); };
+            // Gestion sécurisée de création de compte
+            document.getElementById('form-account').onsubmit = async(e) => {
+                e.preventDefault();
+                const email = document.getElementById('acc-email').value;
+                const password = document.getElementById('acc-pwd').value;
+                const role = document.getElementById('acc-role').value;
+                const nom = document.getElementById('acc-nom').value;
+                const prenom = document.getElementById('acc-prenom').value;
+
+                const { data, error } = await secondary.auth.signUp({ email, password });
+                if (error) { alert("Erreur Auth : " + error.message); return; }
+                if (!data || !data.user) { alert("Erreur : Aucun utilisateur retourné."); return; }
+
+                const { error: profileErr } = await supabase.from('profiles').insert([{
+                    id: data.user.id, role: role, nom: nom, prenom: prenom
+                }]);
+
+                if (profileErr) {
+                    alert("Erreur profil : " + profileErr.message);
+                } else {
+                    alert("Compte créé avec succès !");
+                    location.reload();
+                }
+            };
+
+            document.getElementById('form-affect').onsubmit = async(e) => { e.preventDefault(); await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value); alert("Élève associé à la classe !"); location.reload(); };
+            document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); alert("Classe créée !"); location.reload(); };
+            document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); alert("Matière créée !"); location.reload(); };
             
             document.getElementById('form-edt').onsubmit = async(e) => {
                 e.preventDefault();
@@ -174,12 +208,11 @@
                     heure_debut: document.getElementById('edt-start').value,
                     heure_fin: document.getElementById('edt-end').value
                 }]);
-                alert("Créneau planifié !"); location.reload();
+                alert("Créneau récurrent planifié !"); location.reload();
             };
 
             document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
             
-            // Initialiser le sélecteur de supervision au chargement
             toggleViewSelector();
         })();
     </script>
