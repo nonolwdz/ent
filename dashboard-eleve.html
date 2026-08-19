@@ -6,18 +6,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #0ea5e9; --border-color: #e2e8f0; }
+        :root { 
+            --bg-body: #f4f6f9; 
+            --text-main: #1e293b; 
+            --primary: #0ea5e9; 
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0; 
+        }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
         
-        /* Grille stricte : Col 1 pour les heures, Col 2 à 6 pour Lundi à Vendredi */
-        .schedule-grid { display: grid; grid-template-columns: 80px repeat(5, minmax(140px, 1fr)); grid-template-rows: 40px repeat(9, 50px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); margin-top: 20px; }
-        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-        .time-label { background: #f8fafc; font-size: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #64748b; font-weight: 600; }
-        .grid-cell { background: #ffffff; position: relative; }
-        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: var(--primary); color: white; border-radius: 6px; padding: 4px; font-size: 11px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; }
-        .logout-btn { margin-top: auto; padding: 12px; border: 1px solid #ef4444; color: #ef4444; background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .sidebar { width: 260px; background: white; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; box-shadow: 4px 0 24px rgba(0,0,0,0.02); }
+        .main-content { flex: 1; padding: 35px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: #0f172a; }
+
+        /* Grille moderne et ultra-propre */
+        .schedule-container { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03); overflow: hidden; }
+        .schedule-grid { display: grid; grid-template-columns: 90px repeat(5, minmax(160px, 1fr)); grid-template-rows: 50px repeat(9, 65px); background-color: var(--border-color); gap: 1px; }
+        
+        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; border-right: 1px solid var(--border-color); }
+        
+        .grid-cell { background: #ffffff; position: relative; transition: background 0.2s; }
+        .grid-cell:hover { background: #fafafa; }
+
+        /* Carte de cours design et épurée */
+        .course-card { 
+            position: absolute; top: 4px; bottom: 4px; left: 4px; right: 4px; 
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); 
+            color: white; border-radius: 10px; padding: 8px 10px; 
+            display: flex; flex-direction: column; justify-content: center; 
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .course-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(14, 165, 233, 0.35); }
+        .course-title { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+        .course-prof { font-weight: 400; font-size: 10px; opacity: 0.9; }
+
+        .logout-btn { margin-top: auto; padding: 12px; border: none; background: #fee2e2; color: #ef4444; border-radius: 10px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .logout-btn:hover { background: #fecaca; }
     </style>
 </head>
 <body>
@@ -27,11 +54,13 @@
     </nav>
     <main class="main-content">
         <h1>Mon Emploi du Temps</h1>
-        <div class="schedule-grid" id="schedule-grid"></div>
+        <div class="schedule-container">
+            <div class="schedule-grid" id="schedule-grid"></div>
+        </div>
     </main>
     <script>
         (function() {
-            const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
+            const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
             
             const slots = [
                 { start: "08:30", end: "09:25", row: 2 },
@@ -61,7 +90,7 @@
             function buildGridHeaders() {
                 const grid = document.getElementById('schedule-grid');
                 let html = `
-                    <div class="grid-header" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="grid-header" style="grid-column: 1; grid-row: 1;">Horaires</div>
                     <div class="grid-header" style="grid-column: 2; grid-row: 1;">Lundi</div>
                     <div class="grid-header" style="grid-column: 3; grid-row: 1;">Mardi</div>
                     <div class="grid-header" style="grid-column: 4; grid-row: 1;">Mercredi</div>
@@ -69,7 +98,7 @@
                     <div class="grid-header" style="grid-column: 6; grid-row: 1;">Vendredi</div>
                 `;
                 slots.forEach(s => {
-                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start} - ${s.end}</div>`;
+                    html += `<div class="time-label" style="grid-column: 1; grid-row: ${s.row};">${s.start}<br><span style="font-size:9px; opacity:0.7;">${s.end}</span></div>`;
                 });
                 grid.innerHTML = html;
             }
@@ -96,8 +125,8 @@
 
                         cell.innerHTML = `
                             <div class="course-card">
-                                <span>${c.matieres?.nom || 'Matière'}</span>
-                                <span style="font-weight:normal; font-size:10px;">${c.profiles?.civilite || 'M.'} ${c.profiles?.nom || ''}</span>
+                                <span class="course-title">${c.matieres?.nom || 'Matière'}</span>
+                                <span class="course-prof">${c.profiles?.civilite || 'M.'} ${c.profiles?.nom || ''}</span>
                             </div>
                         `;
                         grid.appendChild(cell);
