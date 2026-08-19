@@ -7,49 +7,70 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg-body: #f8fafc; --text-main: #0f172a; --primary: #8b5cf6; --danger: #ef4444; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); display: flex; height: 100vh; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; }
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-        .card { background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; }
-        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; }
+        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 32px; border-radius: 20px; width: 450px; max-height: 90vh; overflow-y: auto; }
         .form-group { margin-bottom: 15px; }
         input, select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Grille de consultation direction */
+        .viewer-box { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-top: 20px; }
+        .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(140px, 1fr)); grid-template-rows: 35px repeat(9, 50px); gap: 2px; background-color: #e2e8f0; border: 1px solid #e2e8f0; margin-top: 15px; }
+        .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+        .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: flex-start; justify-content: flex-end; padding-right: 4px; color: #64748b; }
+        .grid-cell { background: #ffffff; position: relative; }
+        .course-card { position: absolute; top: 2px; bottom: 2px; left: 2px; right: 2px; background: #8b5cf6; color: white; border-radius: 4px; padding: 3px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-weight: 600; cursor: pointer; }
+        .course-card:hover { background: #7c3aed; }
     </style>
 </head>
 <body>
     <nav class="sidebar">
-        <div style="font-weight:700; margin-bottom:40px;">Lycée Paul de Staël</div>
+        <div style="font-weight:700; margin-bottom:40px;">Lycée Paul de Staël (Direction)</div>
         <button class="btn-action" style="margin-top:auto; background:var(--danger);" id="btn-logout">Se déconnecter</button>
     </nav>
     <main class="main-content">
-        <h1>Administration Globale</h1>
+        <h1>Administration Globale & Suivi des EDT</h1>
         <div class="grid">
             <div class="card"><h2>Comptes & Élèves</h2><button class="btn-action" onclick="openModal('modal-account')">Créer un compte</button><button class="btn-action" style="background:#0ea5e9;" onclick="openModal('modal-affect')">Associer Élève à une classe</button></div>
             <div class="card"><h2>Structure</h2><button class="btn-action" onclick="openModal('modal-class')">Créer une classe</button><button class="btn-action" onclick="openModal('modal-subject')">Créer une matière</button></div>
-            <div class="card"><h2>Emploi du temps type</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau récurrent</button></div>
+            <div class="card"><h2>Emploi du temps</h2><button class="btn-action" onclick="openModal('modal-edt')">Planifier un créneau</button></div>
+        </div>
+
+        <!-- OUTIL DE SUPERVISION DIRECTION -->
+        <div class="viewer-box">
+            <h3>Supervision des Emplois du Temps</h3>
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
+                <select id="view-type" onchange="toggleViewSelector()" style="width:200px;">
+                    <option value="classe">Par Classe</option>
+                    <option value="prof">Par Professeur</option>
+                </select>
+                <select id="view-target" onchange="loadSupervisionEDT()" style="flex:1;"></select>
+            </div>
+            <div class="schedule-grid" id="sup-grid">
+                <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
+            </div>
         </div>
     </main>
 
     <!-- Modales -->
     <div class="modal-overlay" id="modal-account"><div class="modal-content"><h3>Nouveau compte</h3><form id="form-account"><div class="form-group"><label>Rôle</label><select id="acc-role"><option value="eleve">Élève</option><option value="professeur">Professeur</option></select></div><input type="text" id="acc-prenom" placeholder="Prénom" required><input type="text" id="acc-nom" placeholder="Nom" required style="margin-top:10px;"><input type="email" id="acc-email" placeholder="Email" required style="margin-top:10px;"><input type="password" id="acc-pwd" placeholder="Mot de passe" required style="margin-top:10px;"><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
-    
-    <div class="modal-overlay" id="modal-affect"><div class="modal-content"><h3>Affecter un élève</h3><form id="form-affect"><div class="form-group"><label>Choisir l'élève</label><select id="affect-eleve"></select></div><div class="form-group"><label>Choisir la classe</label><select id="affect-class"></select></div><button class="btn-action">Associer</button></form></div></div>
-
-    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom de la classe (ex: Seconde 1)" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
-    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom de la matière" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
-    
-    <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Créneau Récurrent (Toute l'année)</h3><form id="form-edt">
+    <div class="modal-overlay" id="modal-affect"><div class="modal-content"><h3>Affecter un élève</h3><form id="form-affect"><div class="form-group"><label>Élève</label><select id="affect-eleve"></select></div><div class="form-group"><label>Classe</label><select id="affect-class"></select></div><button class="btn-action">Associer</button></form></div></div>
+    <div class="modal-overlay" id="modal-class"><div class="modal-content"><h3>Nouvelle classe</h3><form id="form-class"><input type="text" id="class-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-subject"><div class="modal-content"><h3>Nouvelle matière</h3><form id="form-subject"><input type="text" id="subject-name" placeholder="Nom" required><button class="btn-action" style="margin-top:15px;">Créer</button></form></div></div>
+    <div class="modal-overlay" id="modal-edt"><div class="modal-content"><h3>Créneau Récurrent</h3><form id="form-edt">
         <div class="form-group"><label>Classe</label><select id="edt-class"></select></div>
         <div class="form-group"><label>Professeur</label><select id="edt-prof"></select></div>
         <div class="form-group"><label>Matière</label><select id="edt-subject"></select></div>
-        <div class="form-group"><label>Jour de la semaine</label><select id="edt-jour"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option></select></div>
-        <div class="form-group"><label>Heure de début</label><input type="time" id="edt-start" required></div>
-        <div class="form-group"><label>Heure de fin</label><input type="time" id="edt-end" required></div>
-        <button class="btn-action">Enregistrer le cours type</button>
+        <div class="form-group"><label>Jour</label><select id="edt-jour"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option></select></div>
+        <div class="form-group"><label>Début</label><input type="time" id="edt-start" required></div>
+        <div class="form-group"><label>Fin</label><input type="time" id="edt-end" required></div>
+        <button class="btn-action">Enregistrer</button>
     </form></div></div>
 
     <script>
@@ -59,6 +80,10 @@
 
             window.openModal = async function(id) {
                 document.getElementById(id).classList.add('active');
+                loadDropdowns();
+            }
+
+            async function loadDropdowns() {
                 const [profs, classes, subs, eleves] = await Promise.all([
                     supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur'),
                     supabase.from('classes').select('id, nom'),
@@ -71,25 +96,74 @@
                 if(eleves.data) document.getElementById('affect-eleve').innerHTML = eleves.data.map(el => `<option value="${el.id}">${el.prenom} ${el.nom}</option>`).join('');
             }
 
+            window.toggleViewSelector = async function() {
+                const type = document.getElementById('view-type').value;
+                const target = document.getElementById('view-target');
+                if(type === 'classe') {
+                    const { data } = await supabase.from('classes').select('id, nom');
+                    if(data) target.innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+                } else {
+                    const { data } = await supabase.from('profiles').select('id, nom, prenom').eq('role', 'professeur');
+                    if(data) target.innerHTML = data.map(p => `<option value="${p.id}">M. ${p.prenom} ${p.nom}</option>`).join('');
+                }
+                loadSupervisionEDT();
+            }
+
+            window.loadSupervisionEDT = async function() {
+                const type = document.getElementById('view-type').value;
+                const targetId = document.getElementById('view-target').value;
+                const grid = document.getElementById('sup-grid');
+                
+                // Reset grid labels
+                grid.innerHTML = '<div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>';
+                for(let i = 8; i <= 16; i++) {
+                    grid.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i - 6};">${i < 10 ? '0'+i : i}h00</div>`;
+                }
+
+                if(!targetId) return;
+
+                let query = supabase.from('cours_recurrents').select('id, jour_semaine, heure_debut, heure_fin, matieres(nom), classes(nom), profiles(nom, prenom)');
+                if(type === 'classe') query = query.eq('classe_id', targetId);
+                else query = query.eq('prof_id', targetId);
+
+                const { data: cours } = await query;
+                if(cours) {
+                    cours.forEach(c => {
+                        const startHour = parseInt(c.heure_debut.split(':')[0]);
+                        const endHour = parseInt(c.heure_fin.split(':')[0]);
+                        const duration = endHour - startHour;
+
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.style.gridColumn = c.jour_semaine + 1;
+                        cell.style.gridRowStart = startHour - 6;
+                        if (duration > 1) cell.style.gridRowEnd = `span ${duration}`;
+
+                        cell.innerHTML = `
+                            <div class="course-card" onclick="deleteCourse('${c.id}')" title="Cliquer pour supprimer ce créneau">
+                                <span>${c.matieres?.nom || ''}</span>
+                                <span style="font-size:9px;">${type === 'classe' ? 'M. ' + c.profiles?.nom : c.classes?.nom}</span>
+                            </div>
+                        `;
+                        grid.appendChild(cell);
+                    });
+                }
+            }
+
+            window.deleteCourse = async function(id) {
+                if(confirm("Voulez-vous supprimer ce cours de l'emploi du temps ?")) {
+                    await supabase.from('cours_recurrents').delete().eq('id', id);
+                    loadSupervisionEDT();
+                }
+            }
+
             document.querySelectorAll('.modal-overlay').forEach(m => m.onclick = (e) => { if(e.target === m) m.classList.remove('active'); });
 
-            document.getElementById('form-account').onsubmit = async(e) => {
-                e.preventDefault();
-                const {data} = await secondary.auth.signUp({email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value});
-                await supabase.from('profiles').insert([{id: data.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value}]);
-                alert("Compte créé !"); location.reload();
-            };
-
-            document.getElementById('form-affect').onsubmit = async(e) => {
-                e.preventDefault();
-                await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value);
-                alert("Élève associé à la classe avec succès !"); location.reload();
-            };
-
-            document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); alert("Classe créée !"); location.reload(); };
-            document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); alert("Matière créée !"); location.reload(); };
+            document.getElementById('form-account').onsubmit = async(e) => { e.preventDefault(); const {data} = await secondary.auth.signUp({email: document.getElementById('acc-email').value, password: document.getElementById('acc-pwd').value}); await supabase.from('profiles').insert([{id: data.user.id, role: document.getElementById('acc-role').value, nom: document.getElementById('acc-nom').value, prenom: document.getElementById('acc-prenom').value}]); alert("Créé !"); location.reload(); };
+            document.getElementById('form-affect').onsubmit = async(e) => { e.preventDefault(); await supabase.from('profiles').update({ classe_id: document.getElementById('affect-class').value }).eq('id', document.getElementById('affect-eleve').value); alert("Associé !"); location.reload(); };
+            document.getElementById('form-class').onsubmit = async(e) => { e.preventDefault(); await supabase.from('classes').insert([{nom: document.getElementById('class-name').value}]); location.reload(); };
+            document.getElementById('form-subject').onsubmit = async(e) => { e.preventDefault(); await supabase.from('matieres').insert([{nom: document.getElementById('subject-name').value}]); location.reload(); };
             
-            // Enregistrement dans une table 'cours_recurrents' pour toute l'année
             document.getElementById('form-edt').onsubmit = async(e) => {
                 e.preventDefault();
                 await supabase.from('cours_recurrents').insert([{
@@ -100,10 +174,13 @@
                     heure_debut: document.getElementById('edt-start').value,
                     heure_fin: document.getElementById('edt-end').value
                 }]);
-                alert("Créneau récurrent enregistré ! Il s'affichera chaque semaine."); location.reload();
+                alert("Créneau planifié !"); location.reload();
             };
 
             document.getElementById('btn-logout').onclick = () => supabase.auth.signOut().then(() => location.href = 'index.html');
+            
+            // Initialiser le sélecteur de supervision au chargement
+            toggleViewSelector();
         })();
     </script>
 </body>
