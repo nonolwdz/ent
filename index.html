@@ -3,143 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENT - Connexion</title>
-    <!-- Chargement de Supabase -->
+    <title>ENT - Portail de connexion</title>
+    
+    <!-- Police professionnelle (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        /* Design Sobre et Professionnel */
+        /* Design Haut de Gamme et Épuré */
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --bg: #f8fafc;
-        }
-
-        * {
-            box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --bg-color: #f1f5f9; /* Gris très clair, élégant */
+            --card-bg: #ffffff;
+            --text-main: #0f172a; /* Gris ardoise très foncé */
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #2563eb; /* Bleu pro */
+            --accent-hover: #1d4ed8;
+            --accent-light: #eff6ff;
         }
 
         body {
             margin: 0;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: var(--bg);
-            color: var(--text-dark);
+            min-height: 100vh;
+            color: var(--text-main);
         }
 
-        .login-container {
-            background: #ffffff;
-            padding: 3rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e2e8f0;
+        /* La carte de connexion */
+        .login-card {
+            background: var(--card-bg);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .header {
             text-align: center;
+            margin-bottom: 32px;
         }
 
-        h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.5rem;
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 22px;
             font-weight: 700;
-            color: var(--text-dark);
+            letter-spacing: -0.5px;
         }
 
-        .subtitle {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
+        .header p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
-        /* Boutons de sélection de rôle */
-        .role-selection {
+        /* Liste des profils */
+        #role-section {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 12px;
         }
 
         .role-btn {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            padding: 0.85rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             width: 100%;
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-btn svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
         }
 
         .role-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background-color: #f8fafc;
+            border-color: var(--accent-color);
+            background-color: var(--accent-light);
+            color: var(--accent-color);
+        }
+
+        .role-btn:hover svg {
+            color: var(--accent-color);
         }
 
         /* Formulaire */
-        .login-form {
-            display: none; /* Caché par défaut */
-            flex-direction: column;
-            gap: 1.2rem;
-            text-align: left;
+        #form-section {
+            display: none;
         }
 
-        .login-form.active {
+        #form-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .role-badge {
-            align-self: center;
-            color: var(--primary);
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e0e7ff;
+        .input-group {
+            margin-bottom: 16px;
         }
 
-        label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-dark);
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #334155;
         }
 
-        input {
-            padding: 0.75rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.95rem;
+        .input-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
             outline: none;
             transition: all 0.2s;
-            width: 100%;
+            box-sizing: border-box;
+            background-color: #f8fafc;
         }
 
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        .input-group input:focus {
+            background-color: var(--card-bg);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .submit-btn {
-            background-color: var(--primary);
+            width: 100%;
+            padding: 14px;
+            background-color: var(--text-main);
             color: white;
             border: none;
-            padding: 0.85rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 0.5rem;
             transition: background-color 0.2s;
-            width: 100%;
+            margin-top: 8px;
         }
 
         .submit-btn:hover {
-            background-color: var(--primary-hover);
+            background-color: #1e293b;
         }
 
         .submit-btn:disabled {
@@ -147,139 +185,178 @@
             cursor: not-allowed;
         }
 
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
             cursor: pointer;
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
+            font-weight: 500;
         }
-        
-        .back-btn:hover {
-            color: var(--text-dark);
-            text-decoration: underline;
+
+        .back-link:hover {
+            color: var(--text-main);
         }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <h1>Mon ENT</h1>
-        <p class="subtitle" id="instruction-text">Portail de connexion sécurisé</p>
-
-        <!-- Étape 1 : Choix du rôle -->
-        <div class="role-selection" id="role-selection">
-            <!-- Ajout de type="button" pour éviter tout conflit -->
-            <button class="role-btn" type="button" onclick="showForm('Élève')">Je suis Élève</button>
-            <button class="role-btn" type="button" onclick="showForm('Enseignant')">Je suis Enseignant</button>
-            <button class="role-btn" type="button" onclick="showForm('Direction')">Je suis la Direction</button>
+    <div class="login-card">
+        <div class="header" id="main-header">
+            <h1>Espace Numérique</h1>
+            <p>Sélectionnez votre profil pour continuer</p>
         </div>
 
-        <!-- Étape 2 : Formulaire -->
-        <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+        <!-- Section 1 : Choix des rôles avec icônes SVG -->
+        <div id="role-section">
+            <button class="role-btn" id="btn-eleve">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                Élève
+            </button>
             
-            <div class="role-badge" id="selected-role-title">Connexion</div>
+            <button class="role-btn" id="btn-prof">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                Enseignant
+            </button>
             
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <label for="email">Adresse email</label>
-                <input type="email" id="email" required placeholder="nom@etablissement.fr">
+            <button class="role-btn" id="btn-direction">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                Direction
+            </button>
+        </div>
+
+        <!-- Section 2 : Formulaire -->
+        <div id="form-section">
+            <div class="form-title">
+                <span id="form-role-title">Connexion</span>
             </div>
             
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" required placeholder="••••••••">
-            </div>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="email">Adresse email</label>
+                    <input type="email" id="email" required placeholder="nom@etablissement.fr">
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submit-btn">Se connecter</button>
+            </form>
             
-            <button type="submit" class="submit-btn" id="submit-btn">Se connecter</button>
-            <button type="button" class="back-btn" onclick="showRoles()">Retour au choix du profil</button>
-        </form>
+            <a class="back-link" id="btn-back">← Revenir au choix du profil</a>
+        </div>
     </div>
 
+    <!-- Script JavaScript totalement sécurisé -->
     <script>
-        // Fonctions d'interface : bascule instantanée sans attendre Supabase
-        let currentRole = '';
-
-        function showForm(role) {
-            currentRole = role;
-            document.getElementById('role-selection').style.display = 'none';
-            document.getElementById('instruction-text').style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => {
             
-            const form = document.getElementById('login-form');
-            form.classList.add('active');
-            
-            document.getElementById('selected-role-title').innerText = 'Espace ' + role;
-            
+            // 1. Gestion de l'interface (robuste et sans dépendance externe)
+            const roleSection = document.getElementById('role-section');
+            const formSection = document.getElementById('form-section');
+            const mainHeader = document.getElementById('main-header');
+            const formRoleTitle = document.getElementById('form-role-title');
             const emailInput = document.getElementById('email');
-            if (role === 'Élève') emailInput.placeholder = 'eleve@lycee.fr';
-            else if (role === 'Enseignant') emailInput.placeholder = 'professeur@lycee.fr';
-            else emailInput.placeholder = 'direction@lycee.fr';
-        }
-
-        function showRoles() {
-            currentRole = '';
-            document.getElementById('login-form').classList.remove('active');
-            document.getElementById('role-selection').style.display = 'flex';
-            document.getElementById('instruction-text').style.display = 'block';
             
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-        }
+            let selectedRole = '';
 
-        // Initialisation de Supabase
-        const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            function openForm(role, placeholder) {
+                selectedRole = role;
+                roleSection.style.display = 'none';
+                mainHeader.style.display = 'none'; // Cache le header pour un rendu plus propre
+                formSection.classList.add('active');
+                
+                formRoleTitle.innerText = `Accès ${role}`;
+                emailInput.placeholder = placeholder;
+            }
 
-        // Logique de connexion
-        async function handleLogin(event) {
-            event.preventDefault(); 
+            // Attachement des clics de manière sécurisée
+            document.getElementById('btn-eleve').addEventListener('click', () => openForm('Élève', 'eleve@lycee.fr'));
+            document.getElementById('btn-prof').addEventListener('click', () => openForm('Enseignant', 'professeur@lycee.fr'));
+            document.getElementById('btn-direction').addEventListener('click', () => openForm('Direction', 'direction@lycee.fr'));
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const submitBtn = document.getElementById('submit-btn');
+            // Bouton retour
+            document.getElementById('btn-back').addEventListener('click', () => {
+                formSection.classList.remove('active');
+                roleSection.style.display = 'flex';
+                mainHeader.style.display = 'block';
+                document.getElementById('login-form').reset();
+            });
+
+            // 2. Initialisation de Supabase
+            const supabaseUrl = 'https://sxbifhwmhjvdchjncnpq.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8';
+            let supabase;
             
-            submitBtn.innerText = "Connexion en cours...";
-            submitBtn.disabled = true;
-
             try {
-                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } catch (error) {
+                console.error("Erreur de chargement Supabase:", error);
+            }
 
-                if (authError) throw authError;
+            // 3. Logique de connexion
+            document.getElementById('login-form').addEventListener('submit', async (event) => {
+                event.preventDefault();
 
-                const { data: profileData, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', authData.user.id)
-                    .single();
-
-                if (profileError) throw profileError;
-
-                const roleDb = profileData.role.toLowerCase();
-                const roleChoisi = currentRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-                if (roleDb !== roleChoisi) {
-                    alert(`Accès refusé : Votre compte est enregistré en tant que '${roleDb}'.`);
-                    await supabase.auth.signOut();
-                    showRoles();
+                if (!supabase) {
+                    alert("Erreur de connexion à la base de données. Vérifiez votre connexion internet.");
                     return;
                 }
 
-                if (roleDb === 'eleve') window.location.href = 'dashboard-eleve.html';
-                else if (roleDb === 'professeur') window.location.href = 'dashboard-prof.html';
-                else if (roleDb === 'direction') window.location.href = 'dashboard-direction.html';
+                const email = emailInput.value;
+                const password = document.getElementById('password').value;
+                const submitBtn = document.getElementById('submit-btn');
 
-            } catch (error) {
-                alert("Erreur : Identifiants incorrects ou compte inexistant.");
-                console.error(error);
-            } finally {
-                submitBtn.innerText = "Se connecter";
-                submitBtn.disabled = false;
-            }
-        }
+                submitBtn.innerText = "Connexion...";
+                submitBtn.disabled = true;
+
+                try {
+                    // Authentification
+                    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (authError) throw authError;
+
+                    // Vérification du rôle dans la table profiles
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', authData.user.id)
+                        .single();
+
+                    if (profileError) throw profileError;
+
+                    // Sécurité : vérifier que le rôle choisi correspond au profil
+                    const roleDb = profileData.role.toLowerCase();
+                    const roleChoisi = selectedRole.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                    if (roleDb !== roleChoisi) {
+                        alert(`Accès refusé : Ce compte est configuré comme '${roleDb}'.`);
+                        await supabase.auth.signOut();
+                        document.getElementById('btn-back').click();
+                        return;
+                    }
+
+                    // Redirection
+                    if (roleDb === 'eleve') window.location.href = 'dashboard-eleve.html';
+                    else if (roleDb === 'professeur') window.location.href = 'dashboard-prof.html';
+                    else if (roleDb === 'direction') window.location.href = 'dashboard-direction.html';
+
+                } catch (error) {
+                    alert("Erreur : Identifiants incorrects ou compte inexistant.");
+                    console.error(error);
+                } finally {
+                    submitBtn.innerText = "Se connecter";
+                    submitBtn.disabled = false;
+                }
+            });
+        });
     </script>
 </body>
 </html>
