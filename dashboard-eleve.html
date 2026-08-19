@@ -14,7 +14,6 @@
         }
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; z-index: 10;}
         .logo { font-size: 18px; font-weight: 700; margin-bottom: 40px; color: var(--primary); }
         .nav-link { padding: 12px 16px; border-radius: 10px; color: var(--text-muted); text-decoration: none; font-weight: 500; margin-bottom: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px;}
@@ -22,18 +21,15 @@
         .logout-btn { margin-top: auto; padding: 12px; border: 1px solid var(--danger); color: var(--danger); background: transparent; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: var(--danger); color: white; }
 
-        /* Contenu principal */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative;}
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 24px; font-weight: 700; }
         .user-badge { background: white; padding: 8px 16px; border-radius: 20px; font-weight: 500; font-size: 14px; border: 1px solid var(--border-color); }
 
-        /* Sections (Onglets) */
         .view-section { display: none; flex: 1; flex-direction: column; }
         .view-section.active { display: flex; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 1. Grille EDT */
         .schedule-container { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: auto; padding: 20px; }
         .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, minmax(180px, 1fr)); grid-template-rows: 40px repeat(9, 70px); gap: 2px; background-color: var(--border-color); border: 1px solid var(--border-color); }
         .grid-header { background-color: #f8fafc; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 14px; }
@@ -47,13 +43,11 @@
         .course-card.annule .course-header { background-color: #64748b; text-decoration: line-through; }
         .course-card.annule .course-body { background-color: #f1f5f9; color: #64748b; }
 
-        /* 2. Listes (Devoirs & Absences) */
         .card-list { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
         .item-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .item-card h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 16px; }
         .item-card p { margin: 0; color: var(--text-main); font-size: 14px; line-height: 1.5; }
         .item-date { font-size: 12px; color: var(--text-muted); margin-top: 15px; display: block; font-weight: 600; }
-        
         .badge-retard { color: var(--warning); border: 1px solid var(--warning); padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
         .badge-absent { color: var(--danger); border: 1px solid var(--danger); padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
     </style>
@@ -65,7 +59,6 @@
         <a class="nav-link active" onclick="switchTab('edt', this)">📅 Emploi du temps</a>
         <a class="nav-link" onclick="switchTab('devoirs', this)">📝 Travail à faire</a>
         <a class="nav-link" onclick="switchTab('absences', this)">❌ Mes Absences</a>
-        <a class="nav-link" onclick="alert('La messagerie est en cours de développement')">💬 Messagerie</a>
         <button class="logout-btn" id="btn-logout">Se déconnecter</button>
     </nav>
 
@@ -75,28 +68,20 @@
             <div class="user-badge" id="user-name">Chargement...</div>
         </header>
 
-        <!-- ONGLET 1 : Emploi du temps -->
         <div id="view-edt" class="view-section active">
             <div class="schedule-container">
                 <div class="schedule-grid" id="schedule-grid">
                     <div class="grid-header"></div><div class="grid-header">Lundi</div><div class="grid-header">Mardi</div><div class="grid-header">Mercredi</div><div class="grid-header">Jeudi</div><div class="grid-header">Vendredi</div>
-                    <!-- La grille des heures est générée en JS -->
                 </div>
             </div>
         </div>
 
-        <!-- ONGLET 2 : Devoirs -->
         <div id="view-devoirs" class="view-section">
-            <div class="card-list" id="devoirs-list">
-                <p>Chargement de vos devoirs...</p>
-            </div>
+            <div class="card-list" id="devoirs-list"><p>Chargement...</p></div>
         </div>
 
-        <!-- ONGLET 3 : Absences -->
         <div id="view-absences" class="view-section">
-            <div class="card-list" id="absences-list">
-                <p>Chargement de vos absences...</p>
-            </div>
+            <div class="card-list" id="absences-list"><p>Chargement...</p></div>
         </div>
     </main>
 
@@ -108,26 +93,19 @@
         let currentUser = null;
         let classeId = null;
 
-        // --- NAVIGATION ENTRE LES ONGLETS ---
         function switchTab(tabId, element) {
-            // Mise à jour des liens visuels
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             element.classList.add('active');
-
-            // Masquer toutes les sections, afficher la bonne
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(`view-${tabId}`).classList.add('active');
 
-            // Mise à jour du titre
             const titles = { 'edt': 'Mon Emploi du temps', 'devoirs': 'Travail à faire', 'absences': 'Mes Absences' };
             document.getElementById('page-title').innerText = titles[tabId];
 
-            // Charger les données si besoin
             if (tabId === 'devoirs') loadDevoirs();
             if (tabId === 'absences') loadAbsences();
         }
 
-        // --- INITIALISATION ---
         async function init() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return window.location.href = 'index.html';
@@ -140,12 +118,7 @@
             document.getElementById('user-name').innerText = `${profile.prenom} ${profile.nom}`;
 
             buildGridHeaders();
-            
-            if (!classeId) {
-                document.getElementById('schedule-grid').innerHTML += `<div style="grid-column: 2 / 7; text-align: center; padding: 20px;">Vous n'êtes assigné à aucune classe.</div>`;
-                return;
-            }
-            loadEDT();
+            if (classeId) loadEDT();
         }
 
         function buildGridHeaders() {
@@ -155,7 +128,6 @@
             }
         }
 
-        // --- CHARGEMENT EMPLOI DU TEMPS ---
         async function loadEDT() {
             const { data: cours } = await supabase
                 .from('cours')
@@ -191,70 +163,39 @@
             });
         }
 
-        // --- CHARGEMENT DES DEVOIRS ---
         async function loadDevoirs() {
             const container = document.getElementById('devoirs-list');
-            container.innerHTML = '<p>Recherche des devoirs...</p>';
-
-            // 1. On cherche tous les cours de la classe de l'élève
             const { data: coursClasse } = await supabase.from('cours').select('id, matieres(nom)').eq('classe_id', classeId);
-            if (!coursClasse || coursClasse.length === 0) return container.innerHTML = '<p>Aucun cours trouvé pour votre classe.</p>';
+            if (!coursClasse || coursClasse.length === 0) return container.innerHTML = '<p>Aucun cours trouvé.</p>';
 
-            // 2. On récupère les IDs de ces cours pour trouver les devoirs correspondants
             const coursIds = coursClasse.map(c => c.id);
-            const { data: devoirs } = await supabase.from('devoirs').select('*').in('cours_id', coursIds).order('date_limite', { ascending: true });
+            const { data: devoirs } = await supabase.from('devoirs').select('*').in('cours_id', coursIds);
 
             if (!devoirs || devoirs.length === 0) return container.innerHTML = '<p>Aucun travail à faire ! 🎉</p>';
 
             container.innerHTML = devoirs.map(d => {
-                // Retrouver le nom de la matière grâce à l'ID du cours
-                const matiere = coursClasse.find(c => c.id === d.cours_id)?.matieres?.nom || 'Matière inconnue';
-                const dateFormatee = new Date(d.date_limite).toLocaleDateString('fr-FR');
-                
-                return `
-                    <div class="item-card">
-                        <h3>${matiere}</h3>
-                        <p>${d.contenu}</p>
-                        <span class="item-date">À faire pour le : ${dateFormatee}</span>
-                    </div>
-                `;
+                const matiere = coursClasse.find(c => c.id === d.cours_id)?.matieres?.nom || 'Matière';
+                return `<div class="item-card"><h3>${matiere}</h3><p>${d.contenu}</p><span class="item-date">Pour le : ${d.date_limite}</span></div>`;
             }).join('');
         }
 
-        // --- CHARGEMENT DES ABSENCES ET RETARDS ---
         async function loadAbsences() {
             const container = document.getElementById('absences-list');
-            container.innerHTML = '<p>Recherche du dossier...</p>';
+            const { data: absences } = await supabase.from('absences_eleves').select('statut, date_saisie, cours(matieres(nom))').eq('eleve_id', currentUser.id).neq('statut', 'present');
 
-            // On va chercher dans la table appel uniquement les lignes de l'élève connecté, où il n'est PAS présent
-            const { data: absences } = await supabase
-                .from('absences_eleves')
-                .select('statut, date_saisie, cours(heure_debut, matieres(nom))')
-                .eq('eleve_id', currentUser.id)
-                .neq('statut', 'present')
-                .order('date_saisie', { ascending: false });
+            if (!absences || absences.length === 0) return container.innerHTML = '<p>Aucune absence ni retard ! 👏</p>';
 
-            if (!absences || absences.length === 0) return container.innerHTML = '<p>Dossier parfait, aucune absence ni retard ! 👏</p>';
-
-            container.innerHTML = absences.map(a => {
-                const dateFormatee = new Date(a.date_saisie).toLocaleDateString('fr-FR');
-                const badge = a.statut === 'retard' ? '<span class="badge-retard">Retard</span>' : '<span class="badge-absent">Absence</span>';
-                const matiere = a.cours?.matieres?.nom || 'Cours inconnu';
-                
-                return `
-                    <div class="item-card">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <h3>${matiere}</h3>
-                            ${badge}
-                        </div>
-                        <span class="item-date">Signalé le : ${dateFormatee}</span>
+            container.innerHTML = absences.map(a => `
+                <div class="item-card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3>${a.cours?.matieres?.nom || 'Cours'}</h3>
+                        <span class="${a.statut === 'retard' ? 'badge-retard' : 'badge-absent'}">${a.statut}</span>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
 
         document.getElementById('btn-logout').addEventListener('click', () => { supabase.auth.signOut().then(() => window.location.href = 'index.html'); });
-
         init();
     </script>
 </body>
