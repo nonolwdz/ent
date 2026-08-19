@@ -13,6 +13,7 @@
         h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: #0f172a; }
 
         .schedule-container { overflow: auto; border-radius: 12px; border: 1px solid var(--border-color); background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        /* Grille parfaite : 9 lignes de cours distinctes et aérées */
         .schedule-grid { display: grid; grid-template-columns: 100px repeat(5, minmax(160px, 1fr)); grid-template-rows: 50px repeat(9, 65px); background-color: #e2e8f0; gap: 1px; }
         .grid-header { background: #f8fafc; font-weight: 600; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #475569; }
         .time-label { background: #f8fafc; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; border-right: 1px solid var(--border-color); }
@@ -29,7 +30,6 @@
         .course-prof { font-weight: 400; font-size: 9px; opacity: 0.9; }
 
         .logout-btn { margin-top: auto; padding: 12px; border: none; background: #fee2e2; color: #ef4444; border-radius: 10px; font-weight: 600; cursor: pointer; }
-        .logout-btn:hover { background: #fecaca; }
     </style>
 </head>
 <body>
@@ -48,16 +48,17 @@
         (function() {
             const supabase = window.supabase.createClient('https://sxbifhwmhjvdchjncnpq.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4YmlmaHdtaGp2ZGNoam5jbnBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNTQ1NzAsImV4cCI6MjEwMjczMDU3MH0.rYF2Xaaz7fPfFfHP4c6WKCx1rtDqchUDnVkqZAjY6p8');
             
+            // Indexation propre de 1 à 9 pour les 9 créneaux de la journée
             const slots = [
                 { start: "08:30", end: "09:25", row: 2 },
                 { start: "09:25", end: "10:20", row: 3 },
-                { start: "10:35", end: "11:30", row: 5 },
-                { start: "11:30", end: "12:25", row: 6 },
-                { start: "13:05", end: "14:00", row: 8 },
-                { start: "14:00", end: "14:55", row: 9 },
-                { start: "14:55", end: "15:50", row: 10 },
-                { start: "16:05", end: "17:00", row: 12 },
-                { start: "17:00", end: "17:55", row: 13 }
+                { start: "10:35", end: "11:30", row: 4 },
+                { start: "11:30", end: "12:25", row: 5 },
+                { start: "13:05", end: "14:00", row: 6 },
+                { start: "14:00", end: "14:55", row: 7 },
+                { start: "14:55", end: "15:50", row: 8 },
+                { start: "16:05", end: "17:00", row: 9 },
+                { start: "17:00", end: "17:55", row: 10 }
             ];
 
             async function init() {
